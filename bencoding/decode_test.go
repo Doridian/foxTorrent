@@ -50,6 +50,12 @@ func TestDecodeString(t *testing.T) {
 
 	_, err = bencoding.DecodeString([]byte("99:tooshort"))
 	assert.Error(t, err)
+
+	_, err = bencoding.DecodeString([]byte("-1:aaaaaaaaaaa"))
+	assert.Error(t, err)
+
+	_, err = bencoding.DecodeString([]byte("-0:aaaaaaaaaaa"))
+	assert.Error(t, err)
 }
 
 func TestDecodeList(t *testing.T) {

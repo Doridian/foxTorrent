@@ -14,7 +14,7 @@ func makeDecoderError(reader *bytes.Reader, err string) error {
 	return fmt.Errorf("%s at %d", err, pos)
 }
 
-func readNumeric(reader *bytes.Reader, terminator byte, allowNegative bool) (int64, error) {
+func readNumeric(reader *bytes.Reader, terminator byte) (int64, error) {
 	var res int64 = 0
 	var multiplier int64 = 1
 
@@ -69,7 +69,7 @@ func decodeReader(reader *bytes.Reader) (interface{}, error) {
 		}
 
 		if b == 'i' { // integer
-			return readNumeric(reader, 'e', true)
+			return readNumeric(reader, 'e')
 		} else if b == 'l' { // list
 			res := make([]interface{}, 0)
 			for {
@@ -119,20 +119,27 @@ func decodeReader(reader *bytes.Reader) (interface{}, error) {
 			if err != nil {
 				return nil, err
 			}
-			length, err := readNumeric(reader, ':', false)
+			length, err := readNumeric(reader, ':')
 			if err != nil {
 				return nil, err
 			}
-			buf := make([]byte, length)
-			if length > 0 {
-				readLength, err := reader.Read(buf)
-				if err != nil && !errors.Is(err, io.EOF) {
-					return nil, err
-				}
-				if readLength != int(length) || errors.Is(err, io.EOF) {
-					return nil, makeDecoderError(reader, fmt.Sprintf("encountered short read while reading string (got %d, expected %d)", readLength, length))
-				}
+			if length < 0 {
+				return nil, makeDecoderError(reader, fmt.Sprintf("encountered negative length while reading string (got %d)", length))
 			}
+
+			if length == 0 {
+				return []byte{}, nil
+			}
+
+			buf := make([]byte, length)
+			readLength, err := reader.Read(buf)
+			if err != nil && !errors.Is(err, io.EOF) {
+				return nil, err
+			}
+			if readLength != int(length) || errors.Is(err, io.EOF) {
+				return nil, makeDecoderError(reader, fmt.Sprintf("encountered short read while reading string (got %d, expected %d)", readLength, length))
+			}
+
 			return buf, nil
 		} else if b == 'e' { // end-of-item
 			return ErrEndOfItem, nil
