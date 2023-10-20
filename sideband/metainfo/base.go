@@ -1,11 +1,5 @@
 package metainfo
 
-import (
-	"errors"
-)
-
-var ErrMissingRequiredField = errors.New("missing required field")
-
 type FileInfo struct {
 	Length int64
 	MD5Sum []byte
@@ -17,10 +11,8 @@ type InfoDict struct {
 	Pieces      []byte
 	Private     bool
 
-	Name   string
-	Length int64      // single-file
-	MD5Sum []byte     // single-file
-	Files  []FileInfo // multi-file
+	BaseName string
+	Files    []FileInfo
 }
 
 type Metainfo struct {
