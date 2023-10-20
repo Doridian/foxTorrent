@@ -8,17 +8,17 @@ import (
 )
 
 func TestDecodeInteger(t *testing.T) {
-	res, err := bencoding.DecodeString([]byte("i123e"))
+	res, err := bencoding.DecodeString([]byte("i100003e"))
 	assert.NoError(t, err)
-	assert.Equal(t, int64(123), res)
+	assert.Equal(t, int64(100003), res)
 
 	res, err = bencoding.DecodeString([]byte("i0e"))
 	assert.NoError(t, err)
 	assert.Equal(t, int64(0), res)
 
-	res, err = bencoding.DecodeString([]byte("i-1234e"))
+	res, err = bencoding.DecodeString([]byte("i-1004e"))
 	assert.NoError(t, err)
-	assert.Equal(t, int64(-1234), res)
+	assert.Equal(t, int64(-1004), res)
 
 	_, err = bencoding.DecodeString([]byte("ie"))
 	assert.Error(t, err)

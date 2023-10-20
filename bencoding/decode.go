@@ -15,8 +15,33 @@ func makeDecoderError(reader *bytes.Reader, err string) error {
 }
 
 func readNumeric(reader *bytes.Reader, terminator byte) (int64, error) {
-	var res int64 = 0
+	b, err := reader.ReadByte()
+	if err != nil {
+		return 0, err
+	}
+	return readNumericWithFirstChar(reader, b, terminator)
+}
+
+func readNumericWithFirstChar(reader *bytes.Reader, first byte, terminator byte) (int64, error) {
+	var res int64
 	var multiplier int64 = 1
+
+	if first == '-' {
+		multiplier = -1
+	} else if first == '0' {
+		b, err := reader.ReadByte()
+		if err != nil {
+			return 0, err
+		}
+		if b != terminator {
+			return 0, makeDecoderError(reader, fmt.Sprintf("encountered unexpected \"%c\" after leading zero while trying to read numeric", b))
+		}
+		return 0, nil
+	} else if first < '1' || first > '9' {
+		return 0, makeDecoderError(reader, fmt.Sprintf("encountered unexpected \"%c\" while trying to read first byte of numeric", first))
+	} else {
+		res = int64(first - '0')
+	}
 
 	for {
 		b, err := reader.ReadByte()
@@ -24,27 +49,11 @@ func readNumeric(reader *bytes.Reader, terminator byte) (int64, error) {
 			return 0, err
 		}
 
-		if b == '-' && multiplier == 1 && res == 0 {
-			multiplier = -1
-			continue
+		if b == '0' && res == 0 {
+			return 0, makeDecoderError(reader, "encountered leading zero while reading numeric")
 		}
 
-		if b == '0' {
-			if multiplier != 1 {
-				return 0, makeDecoderError(reader, "encountered leading zero in numeric")
-			}
-
-			b, err = reader.ReadByte()
-			if err != nil {
-				return 0, err
-			}
-			if b != terminator {
-				return 0, makeDecoderError(reader, fmt.Sprintf("encountered unexpected \"%c\" while trying to read numeric", b))
-			}
-			return 0, nil
-		}
-
-		if b < '1' || b > '9' {
+		if b < '0' || b > '9' {
 			if b != terminator {
 				return 0, makeDecoderError(reader, fmt.Sprintf("encountered unexpected \"%c\" while trying to read numeric", b))
 			}

@@ -69,7 +69,7 @@ func TestEncodeDict(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Condition(t, func() bool {
 		resStr := string(res)
-		return resStr == "d3:cow3:moo4:spami1337ee" || resStr == "d4:spami1337ee3:cow3:mooe"
+		return resStr == "d3:cow3:moo4:spami1337ee" || resStr == "d4:spami1337e3:cow3:mooe"
 	})
 
 	res, err = bencoding.EncodeString(map[string]interface{}{
