@@ -16,10 +16,6 @@ func TestDecodeInteger(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, int64(0), res)
 
-	res, err = bencoding.DecodeString([]byte("i-0e"))
-	assert.NoError(t, err)
-	assert.Equal(t, int64(0), res)
-
 	res, err = bencoding.DecodeString([]byte("i-1234e"))
 	assert.NoError(t, err)
 	assert.Equal(t, int64(-1234), res)
@@ -31,6 +27,12 @@ func TestDecodeInteger(t *testing.T) {
 	assert.Error(t, err)
 
 	_, err = bencoding.DecodeString([]byte("i1-2e"))
+	assert.Error(t, err)
+
+	_, err = bencoding.DecodeString([]byte("i-0e"))
+	assert.Error(t, err)
+
+	_, err = bencoding.DecodeString([]byte("i02e"))
 	assert.Error(t, err)
 }
 

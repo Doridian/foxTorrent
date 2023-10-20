@@ -18,6 +18,7 @@ func readNumeric(reader *bytes.Reader, terminator byte, allowNegative bool) (int
 	var res int64 = 0
 	var multiplier int64 = 1
 	haveNumber := false
+	allowZero := true
 
 	for {
 		b, err := reader.ReadByte()
@@ -29,11 +30,29 @@ func readNumeric(reader *bytes.Reader, terminator byte, allowNegative bool) (int
 			allowNegative = false
 			if b == '-' {
 				multiplier = -1
+				allowZero = false
 				continue
 			}
 		}
 
-		if b < '0' || b > '9' {
+		if b == '0' {
+			if !allowZero {
+				return 0, makeDecoderError(reader, "encountered leading zero in numeric")
+			}
+			allowZero = false
+			haveNumber = true
+
+			b, err = reader.ReadByte()
+			if err != nil {
+				return 0, err
+			}
+			if b != terminator {
+				return 0, makeDecoderError(reader, fmt.Sprintf("encountered unexpected \"%c\" while trying to read numeric", b))
+			}
+			return 0, nil
+		}
+
+		if b < '1' || b > '9' {
 			if b != terminator {
 				return 0, makeDecoderError(reader, fmt.Sprintf("encountered unexpected \"%c\" while trying to read numeric", b))
 			}

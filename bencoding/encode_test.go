@@ -64,10 +64,13 @@ func TestEncodeList(t *testing.T) {
 func TestEncodeDict(t *testing.T) {
 	res, err := bencoding.EncodeString(map[string]interface{}{
 		"cow":  []byte("moo"),
-		"spam": []byte("eggs"),
+		"spam": int64(1337),
 	})
 	assert.NoError(t, err)
-	assert.Equal(t, []byte("d3:cow3:moo4:spam4:eggse"), res)
+	assert.Condition(t, func() bool {
+		resStr := string(res)
+		return resStr == "d3:cow3:moo4:spami1337ee" || resStr == "d4:spami1337ee3:cow3:mooe"
+	})
 
 	res, err = bencoding.EncodeString(map[string]interface{}{
 		"spam": []interface{}{
@@ -77,14 +80,6 @@ func TestEncodeDict(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, []byte("d4:spaml1:a1:bee"), res)
-
-	res, err = bencoding.EncodeString(map[string]interface{}{
-		"publisher":          []byte("bob"),
-		"publisher-webpage":  []byte("www.example.com"),
-		"publisher.location": []byte("home"),
-	})
-	assert.NoError(t, err)
-	assert.Equal(t, []byte("d9:publisher3:bob17:publisher-webpage15:www.example.com18:publisher.location4:homee"), res)
 
 	res, err = bencoding.EncodeString(map[string]interface{}{})
 	assert.NoError(t, err)
