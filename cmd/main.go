@@ -1,16 +1,29 @@
 package main
 
 import (
+	"io"
 	"log"
+	"os"
 
-	"github.com/Doridian/foxTorrent/bencoding"
+	"github.com/Doridian/foxTorrent/sideband/metainfo"
 )
 
 func main() {
-	log.Printf("Hello")
+	fh, err := os.Open(os.Args[1])
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer fh.Close()
 
-	testStr := "d9:publisher3:bob17:publisher-webpage15:www.example.com18:publisher.location4:homee"
-	log.Printf("testStr: %v", testStr)
-	res, err := bencoding.DecodeString([]byte(testStr))
-	log.Printf("err: %v ; res: %v", err, res)
+	data, err := io.ReadAll(fh)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	meta, err := metainfo.Decode(data)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("%+v", meta)
 }

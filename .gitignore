@@ -1,2 +1,4 @@
 /fox-torrent
+/testfiles
 *.exe
+.DS_Store
