@@ -3,27 +3,10 @@ package httpproto
 import (
 	"io"
 	"net/http"
-	"net/url"
 	"strconv"
 
-	"github.com/Doridian/foxTorrent/sideband/announce"
+	"github.com/Doridian/foxTorrent/sideband/tracker/announce"
 )
-
-type HTTPClient struct {
-	urlParsed url.URL
-	trackerID string
-}
-
-func NewClient(urlParsed url.URL) (announce.Announcer, error) {
-	return &HTTPClient{
-		urlParsed: urlParsed,
-		trackerID: "",
-	}, nil
-}
-
-func (c *HTTPClient) Connect() error {
-	return nil
-}
 
 func (c *HTTPClient) Announce(state *announce.TorrentState) (*announce.Announce, error) {
 	return c.AnnounceEvent(state, announce.EventNone)
