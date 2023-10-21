@@ -2,6 +2,7 @@ package metainfo
 
 import (
 	"crypto/sha1"
+	"fmt"
 	"time"
 
 	"github.com/Doridian/foxTorrent/bencoding"
@@ -121,10 +122,19 @@ func Decode(data []byte) (*Metainfo, error) {
 	if !ok { // required
 		return nil, bencoding.ErrMissingRequiredField
 	}
-	infoDictTyped.Pieces, ok = piecesRaw.([]byte)
+	piecesTyped, ok := piecesRaw.([]byte)
 	if !ok {
 		return nil, bencoding.ErrInvalidType
 	}
+	if len(piecesTyped)%20 != 0 {
+		return nil, fmt.Errorf("invalid pieces length: %d", len(piecesTyped))
+	}
+
+	infoDictTyped.Pieces = make([][]byte, 0, len(piecesTyped)/20)
+	for i := 0; i < len(piecesTyped); i += 20 {
+		infoDictTyped.Pieces = append(infoDictTyped.Pieces, piecesTyped[i:i+20])
+	}
+
 	privateRaw, ok := infoDict["private"]
 	if ok { // optional
 		privateTyped, ok := privateRaw.(int64)

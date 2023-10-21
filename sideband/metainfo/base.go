@@ -10,7 +10,7 @@ type FileInfo struct {
 
 type InfoDict struct {
 	PieceLength uint64
-	Pieces      []byte
+	Pieces      [][]byte
 	Private     bool
 
 	BaseName string
