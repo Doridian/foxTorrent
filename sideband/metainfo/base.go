@@ -19,7 +19,7 @@ type InfoDict struct {
 
 type Metainfo struct {
 	Info     InfoDict
-	InfoHash [20]byte
+	InfoHash []byte
 
 	Announce     string
 	AnnounceList [][]string

@@ -104,7 +104,8 @@ func Decode(data []byte) (*Metainfo, error) {
 	}
 
 	infoDictMeta := infoDict[bencoding.DictMetaEntry].(bencoding.DictMeta)
-	meta.InfoHash = sha1.Sum(data[infoDictMeta.Begin:infoDictMeta.End])
+	sha1Sum := sha1.Sum(data[infoDictMeta.Begin:infoDictMeta.End])
+	meta.InfoHash = sha1Sum[:]
 
 	pieceLengthRaw, ok := infoDict["piece length"]
 	if !ok { // required
@@ -133,20 +134,20 @@ func Decode(data []byte) (*Metainfo, error) {
 		infoDictTyped.Private = privateTyped == 1
 	}
 
-	nameRaw, ok := infoDict["name"]
+	baseNameRaw, ok := infoDict["name"]
 	if !ok { // required
 		return nil, bencoding.ErrMissingRequiredField
 	}
-	nameTyped, ok := nameRaw.([]byte)
+	baseNameTyped, ok := baseNameRaw.([]byte)
 	if !ok {
 		return nil, bencoding.ErrInvalidType
 	}
-	infoDictTyped.BaseName = string(nameTyped)
 
 	lengthRaw, ok := infoDict["length"]
 	if ok { // optional, indicates single-file mode
+		infoDictTyped.BaseName = ""
 		singleFile := FileInfo{
-			Path: []string{},
+			Path: []string{string(baseNameTyped)},
 		}
 		lengthTyped, ok := lengthRaw.(int64)
 		if !ok {
@@ -164,6 +165,8 @@ func Decode(data []byte) (*Metainfo, error) {
 
 		infoDictTyped.Files = []FileInfo{singleFile}
 	} else { // optional, but if missing must mean multi-file mode!
+		infoDictTyped.BaseName = string(baseNameTyped)
+
 		filesRaw, ok := infoDict["files"]
 		if !ok { // required
 			return nil, bencoding.ErrMissingRequiredField
