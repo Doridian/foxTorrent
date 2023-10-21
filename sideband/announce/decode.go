@@ -103,14 +103,13 @@ func Decode(data []byte) (*Announce, error) {
 			}
 
 			peerIdRaw, ok := peerDict["peer id"]
-			if !ok { // required
-				return nil, bencoding.ErrMissingRequiredField
+			if ok { // optional
+				peerIdTyped, ok := peerIdRaw.([]byte)
+				if !ok {
+					return nil, bencoding.ErrInvalidType
+				}
+				peer.PeerID = string(peerIdTyped)
 			}
-			peerIdTyped, ok := peerIdRaw.([]byte)
-			if !ok {
-				return nil, bencoding.ErrInvalidType
-			}
-			peer.PeerID = string(peerIdTyped)
 
 			ipRaw, ok := peerDict["ip"]
 			if !ok { // required
