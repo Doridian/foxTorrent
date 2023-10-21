@@ -27,7 +27,7 @@ func TestAnnounceUbuntu(t *testing.T) {
 	}
 
 	announceServer := http.Server{
-		Addr: "127.0.0.1:8989",
+		Addr: "127.0.0.1:60881",
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, "/announce", r.URL.Path)
 			assert.Equal(t, "GET", r.Method)
@@ -51,7 +51,7 @@ func TestAnnounceUbuntu(t *testing.T) {
 	go announceServer.ListenAndServe()
 	defer announceServer.Close()
 
-	parsedUrl, err := url.Parse("http://127.0.0.1:8989/announce")
+	parsedUrl, err := url.Parse("http://127.0.0.1:60881/announce")
 	assert.NoError(t, err)
 	client, err := httpproto.NewClient(*parsedUrl)
 	assert.NoError(t, err)
