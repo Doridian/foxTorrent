@@ -38,14 +38,10 @@ func main() {
 
 	log.Printf("%+v", meta)
 
-	var totalLen uint64 = 0
-	for _, file := range meta.Info.Files {
-		totalLen += file.Length
-	}
-
+	totalLen := meta.TotalLength()
 	log.Printf("totalLen: %d", totalLen)
 	if totalLen == 0 {
-		panic("len 0")
+		panic("totalLen 0")
 	}
 
 	state := &announce.TorrentState{
