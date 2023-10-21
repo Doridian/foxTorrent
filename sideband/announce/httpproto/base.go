@@ -10,33 +10,53 @@ import (
 	"github.com/Doridian/foxTorrent/sideband/metainfo"
 )
 
-func SendAnnounce(urlStr string, client *announce.ClientInfo, meta *metainfo.Metainfo) (*announce.Announce, error) {
-	return SendAnnounceEvent(urlStr, "", client, meta)
+type HTTPClient struct {
+	urlParsed  url.URL
+	clientInfo *announce.ClientInfo
 }
 
-func SendAnnounceEvent(urlStr string, event string, client *announce.ClientInfo, meta *metainfo.Metainfo) (*announce.Announce, error) {
-	urlParsed, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, err
-	}
+func NewClient(urlParsed url.URL, clientInfo *announce.ClientInfo) (announce.Announcer, error) {
+	return &HTTPClient{
+		urlParsed:  urlParsed,
+		clientInfo: clientInfo,
+	}, nil
+}
 
-	query := urlParsed.Query()
+func (c *HTTPClient) Connect() error {
+	return nil
+}
+
+func (c *HTTPClient) Announce(meta *metainfo.Metainfo) (*announce.Announce, error) {
+	return c.AnnounceEvent(meta, announce.EventNone)
+}
+
+func (c *HTTPClient) AnnounceEvent(meta *metainfo.Metainfo, event uint32) (*announce.Announce, error) {
+	useUrl := c.urlParsed
+
+	query := useUrl.Query()
 	query.Set("info_hash", string(meta.InfoHash[:]))
-	query.Set("peer_id", client.PeerID)
-	query.Set("port", strconv.FormatInt(client.Port, 10))
+	query.Set("peer_id", c.clientInfo.PeerID)
+	query.Set("port", strconv.FormatUint(uint64(c.clientInfo.Port), 10))
 	query.Set("compact", "1")
 	query.Set("no_peer_id", "1")
-	query.Set("uploaded", strconv.FormatInt(client.Uploaded, 10))
-	query.Set("downloaded", strconv.FormatInt(client.Downloaded, 10))
-	query.Set("left", strconv.FormatInt(client.Left, 10))
-	if event != "" {
-		query.Set("event", event)
+	query.Set("uploaded", strconv.FormatUint(c.clientInfo.Uploaded, 10))
+	query.Set("downloaded", strconv.FormatUint(c.clientInfo.Downloaded, 10))
+	query.Set("left", strconv.FormatUint(c.clientInfo.Left, 10))
+	if event != announce.EventNone {
+		switch event {
+		case announce.EventCompleted:
+			query.Set("event", "completed")
+		case announce.EventStarted:
+			query.Set("event", "started")
+		case announce.EventStopped:
+			query.Set("event", "stopped")
+		}
 	}
 	query.Set("numwant", "50")
-	query.Set("trackerid", client.TrackerID)
-	urlParsed.RawQuery = query.Encode()
+	query.Set("trackerid", c.clientInfo.TrackerID)
+	useUrl.RawQuery = query.Encode()
 
-	resp, err := http.Get(urlParsed.String())
+	resp, err := http.Get(useUrl.String())
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +72,7 @@ func SendAnnounceEvent(urlStr string, event string, client *announce.ClientInfo,
 	}
 
 	if decoded.TrackerID != "" {
-		client.TrackerID = decoded.TrackerID
+		c.clientInfo.TrackerID = decoded.TrackerID
 	}
 
 	return decoded, err

@@ -110,10 +110,12 @@ func Decode(data []byte) (*Metainfo, error) {
 	if !ok { // required
 		return nil, bencoding.ErrMissingRequiredField
 	}
-	infoDictTyped.PieceLength, ok = pieceLengthRaw.(int64)
+	pieceLengthTyped, ok := pieceLengthRaw.(int64)
 	if !ok {
 		return nil, bencoding.ErrInvalidType
 	}
+	infoDictTyped.PieceLength = uint64(pieceLengthTyped)
+
 	piecesRaw, ok := infoDict["pieces"]
 	if !ok { // required
 		return nil, bencoding.ErrMissingRequiredField
@@ -146,10 +148,12 @@ func Decode(data []byte) (*Metainfo, error) {
 		singleFile := FileInfo{
 			Path: []string{},
 		}
-		singleFile.Length, ok = lengthRaw.(int64)
+		lengthTyped, ok := lengthRaw.(int64)
 		if !ok {
 			return nil, bencoding.ErrInvalidType
 		}
+		singleFile.Length = uint64(lengthTyped)
+
 		md5sumRaw, ok := infoDict["md5sum"]
 		if ok { // optional
 			singleFile.MD5Sum, ok = md5sumRaw.([]byte)
@@ -157,6 +161,7 @@ func Decode(data []byte) (*Metainfo, error) {
 				return nil, bencoding.ErrInvalidType
 			}
 		}
+
 		infoDictTyped.Files = []FileInfo{singleFile}
 	} else { // optional, but if missing must mean multi-file mode!
 		filesRaw, ok := infoDict["files"]
@@ -179,10 +184,11 @@ func Decode(data []byte) (*Metainfo, error) {
 			if !ok { // required
 				return nil, bencoding.ErrMissingRequiredField
 			}
-			file.Length, ok = lengthRaw.(int64)
+			lengthTyped, ok := lengthRaw.(int64)
 			if !ok {
 				return nil, bencoding.ErrInvalidType
 			}
+			file.Length = uint64(lengthTyped)
 
 			md5sumRaw, ok := fileRawTyped["md5sum"]
 			if ok { // optional

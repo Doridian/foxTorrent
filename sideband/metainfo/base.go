@@ -3,13 +3,13 @@ package metainfo
 import "time"
 
 type FileInfo struct {
-	Length int64
+	Length uint64
 	MD5Sum []byte
 	Path   []string
 }
 
 type InfoDict struct {
-	PieceLength int64
+	PieceLength uint64
 	Pieces      []byte
 	Private     bool
 

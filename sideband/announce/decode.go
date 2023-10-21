@@ -1,6 +1,7 @@
 package announce
 
 import (
+	"encoding/binary"
 	"fmt"
 	"net"
 
@@ -51,36 +52,40 @@ func Decode(data []byte) (*Announce, error) {
 	if !ok { // required
 		return nil, bencoding.ErrMissingRequiredField
 	}
-	announce.Interval, ok = intervalRaw.(int64)
+	intervalTyped, ok := intervalRaw.(int64)
 	if !ok {
 		return nil, bencoding.ErrInvalidType
 	}
+	announce.Interval = uint32(intervalTyped)
 
 	minIntervalRaw, ok := decodedDict["min interval"]
 	if ok { // optional
-		announce.MinInterval, ok = minIntervalRaw.(int64)
+		minIntervalTyped, ok := minIntervalRaw.(int64)
 		if !ok {
 			return nil, bencoding.ErrInvalidType
 		}
+		announce.MinInterval = uint32(minIntervalTyped)
 	}
 
 	completeRaw, ok := decodedDict["complete"]
 	if !ok { // required
 		return nil, bencoding.ErrMissingRequiredField
 	}
-	announce.Complete, ok = completeRaw.(int64)
+	completeTyped, ok := completeRaw.(int64)
 	if !ok {
 		return nil, bencoding.ErrInvalidType
 	}
+	announce.Complete = uint32(completeTyped)
 
 	incompleteRaw, ok := decodedDict["incomplete"]
 	if !ok { // required
 		return nil, bencoding.ErrMissingRequiredField
 	}
-	announce.Incomplete, ok = incompleteRaw.(int64)
+	incompleteTyped, ok := incompleteRaw.(int64)
 	if !ok {
 		return nil, bencoding.ErrInvalidType
 	}
+	announce.Incomplete = uint32(incompleteTyped)
 
 	peersRaw, ok := decodedDict["peers"]
 	if !ok { // required
@@ -124,10 +129,11 @@ func Decode(data []byte) (*Announce, error) {
 			if !ok { // required
 				return nil, bencoding.ErrMissingRequiredField
 			}
-			peer.Port, ok = portRaw.(int64)
+			portTyped, ok := portRaw.(int64)
 			if !ok {
 				return nil, bencoding.ErrInvalidType
 			}
+			peer.Port = uint16(portTyped)
 
 			peers = append(peers, peer)
 		}
@@ -144,10 +150,10 @@ func Decode(data []byte) (*Announce, error) {
 
 		peers := make([]Peer, 0, len(peersTypedBinary)/6)
 		for i := 0; i < len(peersTypedBinary); i += 6 {
-			peer := Peer{}
-			peer.IP = net.IP(peersTypedBinary[i : i+4])
-			peer.Port = int64(peersTypedBinary[i+4])<<8 + int64(peersTypedBinary[i+5])
-			peers = append(peers, peer)
+			peers = append(peers, Peer{
+				IP:   net.IP(peersTypedBinary[i : i+4]),
+				Port: binary.BigEndian.Uint16(peersTypedBinary[i+4 : i+6]),
+			})
 		}
 		announce.Peers = peers
 	}

@@ -3,15 +3,18 @@ package main
 import (
 	"io"
 	"log"
+	"net/url"
 	"os"
 
 	"github.com/Doridian/foxTorrent/sideband/announce"
 	"github.com/Doridian/foxTorrent/sideband/announce/httpproto"
+	"github.com/Doridian/foxTorrent/sideband/announce/udpproto"
 	"github.com/Doridian/foxTorrent/sideband/metainfo"
 )
 
-func announceSupported(urlStr string) bool {
-	return urlStr[:5] == "http:" || urlStr[:6] == "https:"
+func announceSupported(parsedUrl *url.URL) bool {
+	return parsedUrl.Scheme == "http" || parsedUrl.Scheme == "https" || parsedUrl.Scheme == "udp"
+	//return parsedUrl.Scheme == "udp" && parsedUrl.Port() == "1337"
 }
 
 func main() {
@@ -33,7 +36,7 @@ func main() {
 
 	log.Printf("%+v", meta)
 
-	var totalLen int64 = 0
+	var totalLen uint64 = 0
 	for _, file := range meta.Info.Files {
 		totalLen += file.Length
 	}
@@ -51,23 +54,48 @@ func main() {
 		Left:       totalLen,
 	}
 
-	var announceUrl string
+	var announceUrl *url.URL
 	for _, announceList := range meta.AnnounceList {
 		for _, announce := range announceList {
-			if announceSupported(announce) {
-				announceUrl = announce
+			parsedUrl, err := url.Parse(announce)
+			if err != nil {
+				continue
+			}
+			if announceSupported(parsedUrl) {
+				announceUrl = parsedUrl
 				break
 			}
 		}
-		if announceUrl != "" {
+		if announceUrl != nil {
 			break
 		}
 	}
 
-	res, err := httpproto.SendAnnounceEvent(announceUrl, "started", info, meta)
+	var announcer announce.Announcer
+
+	switch announceUrl.Scheme {
+	case "http", "https":
+		announcer, err = httpproto.NewClient(*announceUrl, info)
+		if err != nil {
+			log.Fatal(err)
+		}
+	case "udp":
+		announcer, err = udpproto.NewClient(announceUrl.Host, info)
+		if err != nil {
+			log.Fatal(err)
+		}
+	default:
+		log.Fatalf("unsupported scheme: %s", announceUrl.Scheme)
+	}
+
+	err = announcer.Connect()
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	res, err := announcer.AnnounceEvent(meta, announce.EventStarted)
+	if err != nil {
+		log.Fatal(err)
+	}
 	log.Printf("%+v", res)
 }
