@@ -13,8 +13,10 @@ import (
 )
 
 func announceSupported(parsedUrl *url.URL) bool {
+	if parsedUrl.Hostname() == "tracker.coppersurfer.tk" {
+		return false
+	}
 	return parsedUrl.Scheme == "http" || parsedUrl.Scheme == "https" || parsedUrl.Scheme == "udp"
-	//return parsedUrl.Scheme == "udp" && parsedUrl.Port() == "1337"
 }
 
 func main() {
@@ -89,10 +91,14 @@ func main() {
 		log.Fatalf("unsupported scheme: %s", announceUrl.Scheme)
 	}
 
+	log.Printf("Connecting to announce at %v", announceUrl)
+
 	err = announcer.Connect()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Printf("Connected. Announcing event started")
 
 	res, err := announcer.AnnounceEvent(state, announce.EventStarted)
 	if err != nil {
