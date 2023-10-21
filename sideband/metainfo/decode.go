@@ -1,6 +1,8 @@
 package metainfo
 
 import (
+	"crypto/sha1"
+
 	"github.com/Doridian/foxTorrent/sideband/bencoding"
 )
 
@@ -98,6 +100,9 @@ func Decode(data []byte) (*Metainfo, error) {
 	if !ok {
 		return nil, bencoding.ErrInvalidType
 	}
+
+	infoDictMeta := infoDict[bencoding.DictMetaEntry].(bencoding.DictMeta)
+	meta.InfoHash = sha1.Sum(data[infoDictMeta.Begin:infoDictMeta.End])
 
 	pieceLengthRaw, ok := infoDict["piece length"]
 	if !ok { // required

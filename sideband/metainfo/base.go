@@ -16,11 +16,16 @@ type InfoDict struct {
 }
 
 type Metainfo struct {
-	Info         InfoDict
+	Info     InfoDict
+	InfoHash [20]byte
+
 	Announce     string
 	AnnounceList [][]string
-	CreationDate int64
-	Comment      string
+
 	CreatedBy    string
-	Encoding     string
+	CreationDate int64
+
+	Comment string
+
+	Encoding string
 }

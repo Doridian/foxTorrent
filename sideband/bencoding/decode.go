@@ -9,9 +9,20 @@ import (
 
 var ErrEndOfItem = errors.New("end-of-item")
 
-func makeDecoderError(reader *bytes.Reader, err string) error {
+const DictMetaEntry = "$$meta$$"
+
+type DictMeta struct {
+	Begin int64
+	End   int64
+}
+
+func getDecoderPosition(reader *bytes.Reader) int64 {
 	pos, _ := reader.Seek(0, io.SeekCurrent)
-	return fmt.Errorf("%s at %d", err, pos)
+	return pos
+}
+
+func makeDecoderError(reader *bytes.Reader, err string) error {
+	return fmt.Errorf("%s at %d", err, getDecoderPosition(reader))
 }
 
 func readNumeric(reader *bytes.Reader, terminator byte) (int64, error) {
@@ -96,6 +107,7 @@ func decodeReader(reader *bytes.Reader) (interface{}, error) {
 			}
 		} else if b == 'd' { // dict string => any
 			res := make(map[string]interface{})
+			begin := getDecoderPosition(reader) - 1
 			for {
 				key, err := decodeReader(reader)
 				if err != nil {
@@ -105,6 +117,10 @@ func decodeReader(reader *bytes.Reader) (interface{}, error) {
 					return nil, makeDecoderError(reader, "encountered EOF trying to decode key")
 				}
 				if key == ErrEndOfItem {
+					res[DictMetaEntry] = DictMeta{
+						Begin: begin,
+						End:   getDecoderPosition(reader),
+					}
 					return res, nil
 				}
 				keyStr, ok := key.([]byte)

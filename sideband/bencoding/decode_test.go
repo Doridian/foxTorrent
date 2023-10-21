@@ -75,8 +75,9 @@ func TestDecodeDict(t *testing.T) {
 	res, err := bencoding.DecodeString([]byte("d3:cow3:moo4:spam4:eggse"))
 	assert.NoError(t, err)
 	assert.Equal(t, map[string]interface{}{
-		"cow":  []byte("moo"),
-		"spam": []byte("eggs"),
+		"cow":      []byte("moo"),
+		"spam":     []byte("eggs"),
+		"$$meta$$": bencoding.DictMeta{Begin: 0, End: 24},
 	}, res)
 
 	res, err = bencoding.DecodeString([]byte("d4:spaml1:a1:bee"))
@@ -86,6 +87,7 @@ func TestDecodeDict(t *testing.T) {
 			[]byte("a"),
 			[]byte("b"),
 		},
+		"$$meta$$": bencoding.DictMeta{Begin: 0, End: 16},
 	}, res)
 
 	res, err = bencoding.DecodeString([]byte("d9:publisher3:bob17:publisher-webpage15:www.example.com18:publisher.location4:homee"))
@@ -94,11 +96,14 @@ func TestDecodeDict(t *testing.T) {
 		"publisher":          []byte("bob"),
 		"publisher-webpage":  []byte("www.example.com"),
 		"publisher.location": []byte("home"),
+		"$$meta$$":           bencoding.DictMeta{Begin: 0, End: 83},
 	}, res)
 
 	res, err = bencoding.DecodeString([]byte("de"))
 	assert.NoError(t, err)
-	assert.Equal(t, map[string]interface{}{}, res)
+	assert.Equal(t, map[string]interface{}{
+		"$$meta$$": bencoding.DictMeta{Begin: 0, End: 2},
+	}, res)
 
 	_, err = bencoding.DecodeString([]byte("d"))
 	assert.Error(t, err)
