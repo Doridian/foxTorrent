@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	actionConnect  = 0
-	actionAnnounce = 1
-	actionScrape   = 2
-	actionError    = 3
+	ActionConnect  = 0
+	ActionAnnounce = 1
+	ActionScrape   = 2
+	ActionError    = 3
 )
 
 type UDPClient struct {
@@ -24,12 +24,25 @@ type UDPClient struct {
 	udpAddr *net.UDPAddr
 
 	connectionID uint64
+
+	readTimeout time.Duration
+	retries     int
 }
 
 func NewClient(addr string) (announce.Announcer, error) {
 	return &UDPClient{
-		addr: addr,
+		addr:        addr,
+		readTimeout: 15 * time.Second,
+		retries:     3,
 	}, nil
+}
+
+func (c *UDPClient) SetReadTimeout(d time.Duration) {
+	c.readTimeout = d
+}
+
+func (c *UDPClient) SetRetries(r int) {
+	c.retries = r
 }
 
 func (c *UDPClient) sendRecv(action uint32, payload []byte) ([]byte, error) {
@@ -44,13 +57,13 @@ func (c *UDPClient) sendRecv(action uint32, payload []byte) ([]byte, error) {
 	packet = binary.BigEndian.AppendUint32(packet, transactionID)
 	packet = append(packet, payload...)
 
-	for retries := 0; retries < 4; retries++ {
+	for retries := 0; retries <= c.retries; retries++ {
 		_, err = c.conn.WriteToUDP(packet, c.udpAddr)
 		if err != nil {
 			return nil, err
 		}
 
-		err = c.conn.SetReadDeadline(time.Now().Add(15 * time.Second))
+		err = c.conn.SetReadDeadline(time.Now().Add(c.readTimeout))
 		if err != nil {
 			return nil, err
 		}
@@ -78,7 +91,7 @@ func (c *UDPClient) sendRecv(action uint32, payload []byte) ([]byte, error) {
 			recvAction := binary.BigEndian.Uint32(buffer[0:4])
 			recvPayload := buffer[8:readLen]
 
-			if recvAction == actionError { // error
+			if recvAction == ActionError { // error
 				return nil, fmt.Errorf("tracker error: %s", recvPayload)
 			}
 
@@ -105,7 +118,7 @@ func (c *UDPClient) Connect() error {
 	}
 	c.connectionID = 0x41727101980
 
-	connectResp, err := c.sendRecv(actionConnect, []byte{})
+	connectResp, err := c.sendRecv(ActionConnect, []byte{})
 	if err != nil {
 		return err
 	}

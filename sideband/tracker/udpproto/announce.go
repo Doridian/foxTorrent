@@ -30,7 +30,7 @@ func (c *UDPClient) AnnounceEvent(state *announce.TorrentState, event uint32) (*
 	announcePayload = binary.BigEndian.AppendUint32(announcePayload, 50) // numwant
 	announcePayload = binary.BigEndian.AppendUint16(announcePayload, state.Port)
 
-	announceResp, err := c.sendRecv(actionAnnounce, announcePayload)
+	announceResp, err := c.sendRecv(ActionAnnounce, announcePayload)
 	if err != nil {
 		return nil, err
 	}
