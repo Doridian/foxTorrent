@@ -41,7 +41,7 @@ func SendAnnounceEvent(urlStr string, event string, client *ClientInfo, meta *me
 	if event != "" {
 		query.Set("event", event)
 	}
-	query.Set("numwant", "50")
+	query.Set("numwant", "-1")
 	query.Set("trackerid", client.TrackerID)
 	urlParsed.RawQuery = query.Encode()
 
