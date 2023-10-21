@@ -118,26 +118,26 @@ func (c *UDPClient) Connect() error {
 	return nil
 }
 
-func (c *UDPClient) Announce(info *announce.ClientInfo) (*announce.Announce, error) {
-	return c.AnnounceEvent(info, announce.EventNone)
+func (c *UDPClient) Announce(state *announce.TorrentState) (*announce.Announce, error) {
+	return c.AnnounceEvent(state, announce.EventNone)
 }
 
-func (c *UDPClient) AnnounceEvent(info *announce.ClientInfo, event uint32) (*announce.Announce, error) {
+func (c *UDPClient) AnnounceEvent(state *announce.TorrentState, event uint32) (*announce.Announce, error) {
 	if c.conn == nil {
 		return nil, errors.New("not connected")
 	}
 
 	announcePayload := make([]byte, 0, 82)
-	announcePayload = append(announcePayload, info.Meta.InfoHash[:]...)
-	announcePayload = append(announcePayload, []byte(info.PeerID)...)
-	announcePayload = binary.BigEndian.AppendUint64(announcePayload, info.Downloaded)
-	announcePayload = binary.BigEndian.AppendUint64(announcePayload, info.Left)
-	announcePayload = binary.BigEndian.AppendUint64(announcePayload, info.Uploaded)
+	announcePayload = append(announcePayload, state.Meta.InfoHash[:]...)
+	announcePayload = append(announcePayload, []byte(state.PeerID)...)
+	announcePayload = binary.BigEndian.AppendUint64(announcePayload, state.Downloaded)
+	announcePayload = binary.BigEndian.AppendUint64(announcePayload, state.Left)
+	announcePayload = binary.BigEndian.AppendUint64(announcePayload, state.Uploaded)
 	announcePayload = binary.BigEndian.AppendUint32(announcePayload, event)
 	announcePayload = binary.BigEndian.AppendUint32(announcePayload, 0)  // IP
 	announcePayload = binary.BigEndian.AppendUint32(announcePayload, 0)  // "key"
 	announcePayload = binary.BigEndian.AppendUint32(announcePayload, 50) // numwant
-	announcePayload = binary.BigEndian.AppendUint16(announcePayload, info.Port)
+	announcePayload = binary.BigEndian.AppendUint16(announcePayload, state.Port)
 
 	announceResp, err := c.sendRecv(actionAnnounce, announcePayload)
 	if err != nil {

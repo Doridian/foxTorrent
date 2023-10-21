@@ -33,7 +33,7 @@ const (
 	EventStopped   = 3
 )
 
-type ClientInfo struct {
+type TorrentState struct {
 	PeerID string
 	Port   uint16
 
@@ -45,7 +45,7 @@ type ClientInfo struct {
 }
 
 type Announcer interface {
-	Announce(info *ClientInfo) (*Announce, error)
-	AnnounceEvent(info *ClientInfo, event uint32) (*Announce, error)
+	Announce(state *TorrentState) (*Announce, error)
+	AnnounceEvent(state *TorrentState, event uint32) (*Announce, error)
 	Connect() error
 }

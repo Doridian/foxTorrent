@@ -25,22 +25,22 @@ func (c *HTTPClient) Connect() error {
 	return nil
 }
 
-func (c *HTTPClient) Announce(info *announce.ClientInfo) (*announce.Announce, error) {
-	return c.AnnounceEvent(info, announce.EventNone)
+func (c *HTTPClient) Announce(state *announce.TorrentState) (*announce.Announce, error) {
+	return c.AnnounceEvent(state, announce.EventNone)
 }
 
-func (c *HTTPClient) AnnounceEvent(info *announce.ClientInfo, event uint32) (*announce.Announce, error) {
+func (c *HTTPClient) AnnounceEvent(state *announce.TorrentState, event uint32) (*announce.Announce, error) {
 	useUrl := c.urlParsed
 
 	query := useUrl.Query()
-	query.Set("info_hash", string(info.Meta.InfoHash[:]))
-	query.Set("peer_id", info.PeerID)
-	query.Set("port", strconv.FormatUint(uint64(info.Port), 10))
+	query.Set("info_hash", string(state.Meta.InfoHash[:]))
+	query.Set("peer_id", state.PeerID)
+	query.Set("port", strconv.FormatUint(uint64(state.Port), 10))
 	query.Set("compact", "1")
 	query.Set("no_peer_id", "1")
-	query.Set("uploaded", strconv.FormatUint(info.Uploaded, 10))
-	query.Set("downloaded", strconv.FormatUint(info.Downloaded, 10))
-	query.Set("left", strconv.FormatUint(info.Left, 10))
+	query.Set("uploaded", strconv.FormatUint(state.Uploaded, 10))
+	query.Set("downloaded", strconv.FormatUint(state.Downloaded, 10))
+	query.Set("left", strconv.FormatUint(state.Left, 10))
 	if event != announce.EventNone {
 		switch event {
 		case announce.EventCompleted:

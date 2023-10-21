@@ -46,7 +46,7 @@ func main() {
 		panic("len 0")
 	}
 
-	info := &announce.ClientInfo{
+	state := &announce.TorrentState{
 		PeerID:     "foxTorrent dummyPeer",
 		Port:       1337,
 		Uploaded:   0,
@@ -94,7 +94,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	res, err := announcer.AnnounceEvent(info, announce.EventStarted)
+	res, err := announcer.AnnounceEvent(state, announce.EventStarted)
 	if err != nil {
 		log.Fatal(err)
 	}
