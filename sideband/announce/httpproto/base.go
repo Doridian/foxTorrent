@@ -7,18 +7,17 @@ import (
 	"strconv"
 
 	"github.com/Doridian/foxTorrent/sideband/announce"
-	"github.com/Doridian/foxTorrent/sideband/metainfo"
 )
 
 type HTTPClient struct {
-	urlParsed  url.URL
-	clientInfo *announce.ClientInfo
+	urlParsed url.URL
+	trackerID string
 }
 
-func NewClient(urlParsed url.URL, clientInfo *announce.ClientInfo) (announce.Announcer, error) {
+func NewClient(urlParsed url.URL) (announce.Announcer, error) {
 	return &HTTPClient{
-		urlParsed:  urlParsed,
-		clientInfo: clientInfo,
+		urlParsed: urlParsed,
+		trackerID: "",
 	}, nil
 }
 
@@ -26,22 +25,22 @@ func (c *HTTPClient) Connect() error {
 	return nil
 }
 
-func (c *HTTPClient) Announce(meta *metainfo.Metainfo) (*announce.Announce, error) {
-	return c.AnnounceEvent(meta, announce.EventNone)
+func (c *HTTPClient) Announce(info *announce.ClientInfo) (*announce.Announce, error) {
+	return c.AnnounceEvent(info, announce.EventNone)
 }
 
-func (c *HTTPClient) AnnounceEvent(meta *metainfo.Metainfo, event uint32) (*announce.Announce, error) {
+func (c *HTTPClient) AnnounceEvent(info *announce.ClientInfo, event uint32) (*announce.Announce, error) {
 	useUrl := c.urlParsed
 
 	query := useUrl.Query()
-	query.Set("info_hash", string(meta.InfoHash[:]))
-	query.Set("peer_id", c.clientInfo.PeerID)
-	query.Set("port", strconv.FormatUint(uint64(c.clientInfo.Port), 10))
+	query.Set("info_hash", string(info.Meta.InfoHash[:]))
+	query.Set("peer_id", info.PeerID)
+	query.Set("port", strconv.FormatUint(uint64(info.Port), 10))
 	query.Set("compact", "1")
 	query.Set("no_peer_id", "1")
-	query.Set("uploaded", strconv.FormatUint(c.clientInfo.Uploaded, 10))
-	query.Set("downloaded", strconv.FormatUint(c.clientInfo.Downloaded, 10))
-	query.Set("left", strconv.FormatUint(c.clientInfo.Left, 10))
+	query.Set("uploaded", strconv.FormatUint(info.Uploaded, 10))
+	query.Set("downloaded", strconv.FormatUint(info.Downloaded, 10))
+	query.Set("left", strconv.FormatUint(info.Left, 10))
 	if event != announce.EventNone {
 		switch event {
 		case announce.EventCompleted:
@@ -53,7 +52,7 @@ func (c *HTTPClient) AnnounceEvent(meta *metainfo.Metainfo, event uint32) (*anno
 		}
 	}
 	query.Set("numwant", "50")
-	query.Set("trackerid", c.clientInfo.TrackerID)
+	query.Set("trackerid", c.trackerID)
 	useUrl.RawQuery = query.Encode()
 
 	resp, err := http.Get(useUrl.String())
@@ -72,7 +71,7 @@ func (c *HTTPClient) AnnounceEvent(meta *metainfo.Metainfo, event uint32) (*anno
 	}
 
 	if decoded.TrackerID != "" {
-		c.clientInfo.TrackerID = decoded.TrackerID
+		c.trackerID = decoded.TrackerID
 	}
 
 	return decoded, err

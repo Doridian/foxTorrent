@@ -34,17 +34,18 @@ const (
 )
 
 type ClientInfo struct {
-	PeerID    string
-	TrackerID string
-	Port      uint16
+	PeerID string
+	Port   uint16
 
 	Uploaded   uint64
 	Downloaded uint64
 	Left       uint64
+
+	Meta *metainfo.Metainfo
 }
 
 type Announcer interface {
-	Announce(meta *metainfo.Metainfo) (*Announce, error)
-	AnnounceEvent(meta *metainfo.Metainfo, event uint32) (*Announce, error)
+	Announce(info *ClientInfo) (*Announce, error)
+	AnnounceEvent(info *ClientInfo, event uint32) (*Announce, error)
 	Connect() error
 }

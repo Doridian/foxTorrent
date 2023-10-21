@@ -52,6 +52,7 @@ func main() {
 		Uploaded:   0,
 		Downloaded: 0,
 		Left:       totalLen,
+		Meta:       meta,
 	}
 
 	var announceUrl *url.URL
@@ -75,12 +76,12 @@ func main() {
 
 	switch announceUrl.Scheme {
 	case "http", "https":
-		announcer, err = httpproto.NewClient(*announceUrl, info)
+		announcer, err = httpproto.NewClient(*announceUrl)
 		if err != nil {
 			log.Fatal(err)
 		}
 	case "udp":
-		announcer, err = udpproto.NewClient(announceUrl.Host, info)
+		announcer, err = udpproto.NewClient(announceUrl.Host)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -93,7 +94,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	res, err := announcer.AnnounceEvent(meta, announce.EventStarted)
+	res, err := announcer.AnnounceEvent(info, announce.EventStarted)
 	if err != nil {
 		log.Fatal(err)
 	}

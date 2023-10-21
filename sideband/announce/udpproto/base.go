@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/Doridian/foxTorrent/sideband/announce"
-	"github.com/Doridian/foxTorrent/sideband/metainfo"
 )
 
 const (
@@ -19,8 +18,7 @@ const (
 )
 
 type UDPClient struct {
-	addr       string
-	clientInfo *announce.ClientInfo
+	addr string
 
 	conn    *net.UDPConn
 	udpAddr *net.UDPAddr
@@ -28,10 +26,9 @@ type UDPClient struct {
 	connectionID uint64
 }
 
-func NewClient(addr string, clientInfo *announce.ClientInfo) (announce.Announcer, error) {
+func NewClient(addr string) (announce.Announcer, error) {
 	return &UDPClient{
-		addr:       addr,
-		clientInfo: clientInfo,
+		addr: addr,
 	}, nil
 }
 
@@ -121,26 +118,26 @@ func (c *UDPClient) Connect() error {
 	return nil
 }
 
-func (c *UDPClient) Announce(meta *metainfo.Metainfo) (*announce.Announce, error) {
-	return c.AnnounceEvent(meta, announce.EventNone)
+func (c *UDPClient) Announce(info *announce.ClientInfo) (*announce.Announce, error) {
+	return c.AnnounceEvent(info, announce.EventNone)
 }
 
-func (c *UDPClient) AnnounceEvent(meta *metainfo.Metainfo, event uint32) (*announce.Announce, error) {
+func (c *UDPClient) AnnounceEvent(info *announce.ClientInfo, event uint32) (*announce.Announce, error) {
 	if c.conn == nil {
 		return nil, errors.New("not connected")
 	}
 
 	announcePayload := make([]byte, 0, 82)
-	announcePayload = append(announcePayload, meta.InfoHash[:]...)
-	announcePayload = append(announcePayload, []byte(c.clientInfo.PeerID)...)
-	announcePayload = binary.BigEndian.AppendUint64(announcePayload, c.clientInfo.Downloaded)
-	announcePayload = binary.BigEndian.AppendUint64(announcePayload, c.clientInfo.Left)
-	announcePayload = binary.BigEndian.AppendUint64(announcePayload, c.clientInfo.Uploaded)
+	announcePayload = append(announcePayload, info.Meta.InfoHash[:]...)
+	announcePayload = append(announcePayload, []byte(info.PeerID)...)
+	announcePayload = binary.BigEndian.AppendUint64(announcePayload, info.Downloaded)
+	announcePayload = binary.BigEndian.AppendUint64(announcePayload, info.Left)
+	announcePayload = binary.BigEndian.AppendUint64(announcePayload, info.Uploaded)
 	announcePayload = binary.BigEndian.AppendUint32(announcePayload, event)
 	announcePayload = binary.BigEndian.AppendUint32(announcePayload, 0)  // IP
 	announcePayload = binary.BigEndian.AppendUint32(announcePayload, 0)  // "key"
 	announcePayload = binary.BigEndian.AppendUint32(announcePayload, 50) // numwant
-	announcePayload = binary.BigEndian.AppendUint16(announcePayload, c.clientInfo.Port)
+	announcePayload = binary.BigEndian.AppendUint16(announcePayload, info.Port)
 
 	announceResp, err := c.sendRecv(actionAnnounce, announcePayload)
 	if err != nil {
