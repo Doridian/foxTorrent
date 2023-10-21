@@ -1,4 +1,4 @@
-package udpproto_test
+package udp_test
 
 import (
 	"encoding/binary"
@@ -8,8 +8,9 @@ import (
 	"time"
 
 	"github.com/Doridian/foxTorrent/sideband/metainfo"
+	"github.com/Doridian/foxTorrent/sideband/tracker"
 	"github.com/Doridian/foxTorrent/sideband/tracker/announce"
-	"github.com/Doridian/foxTorrent/sideband/tracker/udpproto"
+	"github.com/Doridian/foxTorrent/sideband/tracker/udp"
 	"github.com/Doridian/foxTorrent/testfiles"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,7 +22,7 @@ func TestAnnounceUbuntu(t *testing.T) {
 	expectedAnnounce, err := announce.Decode(testfiles.Ubuntu2310LiveServerAMD64IsoAnnounceIpv4)
 	assert.NoError(t, err)
 
-	state := &announce.TorrentState{
+	state := &tracker.TorrentState{
 		PeerID:     "foxTorrent dummyPeer",
 		Port:       6881,
 		Uploaded:   0,
@@ -52,7 +53,7 @@ func TestAnnounceUbuntu(t *testing.T) {
 			action := binary.BigEndian.Uint32(data[8:12])
 			transactionID := binary.BigEndian.Uint32(data[12:16])
 
-			if action == udpproto.ActionConnect {
+			if action == udp.ActionConnect {
 				expectedConnectionID = uint64(0x41727101980)
 			}
 
@@ -61,12 +62,12 @@ func TestAnnounceUbuntu(t *testing.T) {
 			}
 
 			switch action {
-			case udpproto.ActionConnect:
+			case udp.ActionConnect:
 				expectedConnectionID = uint64(time.Now().UnixNano())
 
 				response := make([]byte, 0, 16)
 
-				response = binary.BigEndian.AppendUint32(response, udpproto.ActionConnect)
+				response = binary.BigEndian.AppendUint32(response, udp.ActionConnect)
 				response = binary.BigEndian.AppendUint32(response, transactionID)
 
 				response = binary.BigEndian.AppendUint64(response, expectedConnectionID)
@@ -76,10 +77,10 @@ func TestAnnounceUbuntu(t *testing.T) {
 					panic(err)
 				}
 
-			case udpproto.ActionAnnounce:
+			case udp.ActionAnnounce:
 				response := make([]byte, 0, 26)
 
-				response = binary.BigEndian.AppendUint32(response, udpproto.ActionAnnounce)
+				response = binary.BigEndian.AppendUint32(response, udp.ActionAnnounce)
 				response = binary.BigEndian.AppendUint32(response, transactionID)
 
 				response = binary.BigEndian.AppendUint32(response, expectedAnnounce.Interval)
@@ -99,10 +100,10 @@ func TestAnnounceUbuntu(t *testing.T) {
 
 	defer announceServer.Close()
 
-	client, err := udpproto.NewClient("127.0.0.1:60881")
+	client, err := udp.NewClient("127.0.0.1:60881")
 	assert.NoError(t, err)
-	client.(*udpproto.UDPClient).SetReadTimeout(1 * time.Second)
-	client.(*udpproto.UDPClient).SetRetries(0)
+	client.(*udp.UDPClient).SetReadTimeout(1 * time.Second)
+	client.(*udp.UDPClient).SetRetries(0)
 
 	err = client.Connect()
 	assert.NoError(t, err)

@@ -1,4 +1,4 @@
-package udpproto
+package udp
 
 import (
 	"encoding/binary"
@@ -7,7 +7,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/Doridian/foxTorrent/sideband/tracker/announce"
+	"github.com/Doridian/foxTorrent/sideband/tracker"
 )
 
 const (
@@ -29,7 +29,7 @@ type UDPClient struct {
 	retries     int
 }
 
-func NewClient(addr string) (announce.Announcer, error) {
+func NewClient(addr string) (tracker.Announcer, error) {
 	return &UDPClient{
 		addr:        addr,
 		readTimeout: 15 * time.Second,

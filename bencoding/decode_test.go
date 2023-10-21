@@ -3,7 +3,7 @@ package bencoding_test
 import (
 	"testing"
 
-	"github.com/Doridian/foxTorrent/sideband/bencoding"
+	"github.com/Doridian/foxTorrent/bencoding"
 	"github.com/stretchr/testify/assert"
 )
 

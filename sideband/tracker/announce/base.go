@@ -2,8 +2,6 @@ package announce
 
 import (
 	"net"
-
-	"github.com/Doridian/foxTorrent/sideband/metainfo"
 )
 
 type Peer struct {
@@ -32,20 +30,3 @@ const (
 	EventStarted   = 2
 	EventStopped   = 3
 )
-
-type TorrentState struct {
-	PeerID string
-	Port   uint16
-
-	Uploaded   uint64
-	Downloaded uint64
-	Left       uint64
-
-	Meta *metainfo.Metainfo
-}
-
-type Announcer interface {
-	Announce(state *TorrentState) (*Announce, error)
-	AnnounceEvent(state *TorrentState, event uint32) (*Announce, error)
-	Connect() error
-}

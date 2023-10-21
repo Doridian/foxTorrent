@@ -4,7 +4,7 @@ import (
 	"crypto/sha1"
 	"time"
 
-	"github.com/Doridian/foxTorrent/sideband/bencoding"
+	"github.com/Doridian/foxTorrent/bencoding"
 )
 
 func Decode(data []byte) (*Metainfo, error) {

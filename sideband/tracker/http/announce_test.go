@@ -1,14 +1,15 @@
-package httpproto_test
+package http_test
 
 import (
-	"net/http"
+	nethttp "net/http"
 	"net/url"
 	"strconv"
 	"testing"
 
 	"github.com/Doridian/foxTorrent/sideband/metainfo"
+	"github.com/Doridian/foxTorrent/sideband/tracker"
 	"github.com/Doridian/foxTorrent/sideband/tracker/announce"
-	"github.com/Doridian/foxTorrent/sideband/tracker/httpproto"
+	"github.com/Doridian/foxTorrent/sideband/tracker/http"
 	"github.com/Doridian/foxTorrent/testfiles"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,7 +18,7 @@ func TestAnnounceUbuntu(t *testing.T) {
 	meta, err := metainfo.Decode(testfiles.Ubuntu2310LiveServerAMD64IsoTorrent)
 	assert.NoError(t, err)
 
-	state := &announce.TorrentState{
+	state := &tracker.TorrentState{
 		PeerID:     "foxTorrent dummyPeer",
 		Port:       6881,
 		Uploaded:   0,
@@ -26,17 +27,17 @@ func TestAnnounceUbuntu(t *testing.T) {
 		Meta:       meta,
 	}
 
-	var announcRequest http.Request
+	var announcRequest nethttp.Request
 
-	announceServer := http.Server{
+	announceServer := nethttp.Server{
 		Addr: "127.0.0.1:60881",
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		Handler: nethttp.HandlerFunc(func(w nethttp.ResponseWriter, r *nethttp.Request) {
 			if r.URL.Path != "/announce" {
-				w.WriteHeader(http.StatusNotFound)
+				w.WriteHeader(nethttp.StatusNotFound)
 				return
 			}
 			if r.Method != "GET" {
-				w.WriteHeader(http.StatusMethodNotAllowed)
+				w.WriteHeader(nethttp.StatusMethodNotAllowed)
 				return
 			}
 
@@ -50,7 +51,7 @@ func TestAnnounceUbuntu(t *testing.T) {
 
 	parsedUrl, err := url.Parse("http://127.0.0.1:60881/announce")
 	assert.NoError(t, err)
-	client, err := httpproto.NewClient(*parsedUrl)
+	client, err := http.NewClient(*parsedUrl)
 	assert.NoError(t, err)
 
 	announceResp, err := client.AnnounceEvent(state, announce.EventStarted)

@@ -7,9 +7,10 @@ import (
 	"os"
 
 	"github.com/Doridian/foxTorrent/sideband/metainfo"
+	"github.com/Doridian/foxTorrent/sideband/tracker"
 	"github.com/Doridian/foxTorrent/sideband/tracker/announce"
-	"github.com/Doridian/foxTorrent/sideband/tracker/httpproto"
-	"github.com/Doridian/foxTorrent/sideband/tracker/udpproto"
+	"github.com/Doridian/foxTorrent/sideband/tracker/http"
+	"github.com/Doridian/foxTorrent/sideband/tracker/udp"
 )
 
 func announceSupported(parsedUrl *url.URL) bool {
@@ -44,7 +45,7 @@ func main() {
 		panic("totalLen 0")
 	}
 
-	state := &announce.TorrentState{
+	state := &tracker.TorrentState{
 		PeerID:     "foxTorrent dummyPeer",
 		Port:       1337,
 		Uploaded:   0,
@@ -70,16 +71,16 @@ func main() {
 		}
 	}
 
-	var announcer announce.Announcer
+	var announcer tracker.Announcer
 
 	switch announceUrl.Scheme {
 	case "http", "https":
-		announcer, err = httpproto.NewClient(*announceUrl)
+		announcer, err = http.NewClient(*announceUrl)
 		if err != nil {
 			log.Fatal(err)
 		}
 	case "udp":
-		announcer, err = udpproto.NewClient(announceUrl.Host)
+		announcer, err = udp.NewClient(announceUrl.Host)
 		if err != nil {
 			log.Fatal(err)
 		}
