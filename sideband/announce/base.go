@@ -21,3 +21,12 @@ type Announce struct {
 
 	Peers []Peer
 }
+
+type ClientInfo struct {
+	PeerID     string
+	TrackerID  string
+	Port       int64
+	Uploaded   int64
+	Downloaded int64
+	Left       int64
+}

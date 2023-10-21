@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/Doridian/foxTorrent/sideband/announce"
 	"github.com/Doridian/foxTorrent/sideband/announce/httpproto"
 	"github.com/Doridian/foxTorrent/sideband/metainfo"
 )
@@ -42,7 +43,7 @@ func main() {
 		panic("len 0")
 	}
 
-	info := &httpproto.ClientInfo{
+	info := &announce.ClientInfo{
 		PeerID:     "foxTorrent dummyPeer",
 		Port:       1337,
 		Uploaded:   0,

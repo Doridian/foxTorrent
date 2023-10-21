@@ -10,20 +10,11 @@ import (
 	"github.com/Doridian/foxTorrent/sideband/metainfo"
 )
 
-type ClientInfo struct {
-	PeerID     string
-	TrackerID  string
-	Port       int64
-	Uploaded   int64
-	Downloaded int64
-	Left       int64
-}
-
-func SendAnnounce(urlStr string, client *ClientInfo, meta *metainfo.Metainfo) (*announce.Announce, error) {
+func SendAnnounce(urlStr string, client *announce.ClientInfo, meta *metainfo.Metainfo) (*announce.Announce, error) {
 	return SendAnnounceEvent(urlStr, "", client, meta)
 }
 
-func SendAnnounceEvent(urlStr string, event string, client *ClientInfo, meta *metainfo.Metainfo) (*announce.Announce, error) {
+func SendAnnounceEvent(urlStr string, event string, client *announce.ClientInfo, meta *metainfo.Metainfo) (*announce.Announce, error) {
 	urlParsed, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, err
@@ -41,7 +32,7 @@ func SendAnnounceEvent(urlStr string, event string, client *ClientInfo, meta *me
 	if event != "" {
 		query.Set("event", event)
 	}
-	query.Set("numwant", "-1")
+	query.Set("numwant", "50")
 	query.Set("trackerid", client.TrackerID)
 	urlParsed.RawQuery = query.Encode()
 
