@@ -1,5 +1,7 @@
 package metainfo
 
+import "time"
+
 type FileInfo struct {
 	Length int64
 	MD5Sum []byte
@@ -23,7 +25,7 @@ type Metainfo struct {
 	AnnounceList [][]string
 
 	CreatedBy    string
-	CreationDate int64
+	CreationDate time.Time
 
 	Comment string
 

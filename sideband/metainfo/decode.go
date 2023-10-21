@@ -2,6 +2,7 @@ package metainfo
 
 import (
 	"crypto/sha1"
+	"time"
 
 	"github.com/Doridian/foxTorrent/sideband/bencoding"
 )
@@ -57,10 +58,11 @@ func Decode(data []byte) (*Metainfo, error) {
 
 	creationDateRaw, ok := decodedDict["creation date"]
 	if ok { // optional
-		meta.CreationDate, ok = creationDateRaw.(int64)
+		creationDateTyped, ok := creationDateRaw.(int64)
 		if !ok {
 			return nil, bencoding.ErrInvalidType
 		}
+		meta.CreationDate = time.Unix(creationDateTyped, 0)
 	}
 
 	commentRaw, ok := decodedDict["comment"]
