@@ -19,7 +19,7 @@ func TestDecodeUbuntuTorrent(t *testing.T) {
 	assert.Equal(t, time.Time(time.Date(2023, time.October, 12, 14, 24, 45, 0, time.UTC)), meta.CreationDate.UTC())
 	assert.Equal(t, "Ubuntu CD releases.ubuntu.com", meta.Comment)
 	assert.Equal(t, "", meta.Encoding)
-	assert.Equal(t, 203120, len(meta.Info.Pieces))
+	assert.Equal(t, 10156, len(meta.Info.Pieces))
 
 	assert.Equal(t, []byte{0xc1, 0x46, 0x37, 0x92, 0xa1, 0xff, 0x36, 0xa2, 0x37, 0xe3, 0xa0, 0xf6, 0x8b, 0xad, 0xeb, 0x0d, 0x37, 0x64, 0xe9, 0xbb}, meta.InfoHash)
 	assert.Equal(t, "", meta.Info.BaseName)
