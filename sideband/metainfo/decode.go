@@ -212,7 +212,7 @@ func Decode(data []byte) (*Metainfo, error) {
 
 			files = append(files, file)
 		}
-		meta.Info.Files = files
+		infoDictTyped.Files = files
 	}
 
 	meta.Info = infoDictTyped
