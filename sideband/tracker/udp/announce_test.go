@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"net/url"
 	"testing"
 	"time"
 
@@ -100,7 +101,8 @@ func TestAnnounceUbuntu(t *testing.T) {
 
 	defer announceServer.Close()
 
-	client, err := udp.NewClient("127.0.0.1:60881")
+	parsedUrl, _ := url.Parse("udp://127.0.0.1:60881")
+	client, err := udp.NewClient(*parsedUrl)
 	assert.NoError(t, err)
 	client.(*udp.UDPClient).SetReadTimeout(1 * time.Second)
 	client.(*udp.UDPClient).SetRetries(0)

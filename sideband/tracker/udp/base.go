@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"time"
 
 	"github.com/Doridian/foxTorrent/sideband/tracker"
@@ -29,9 +30,13 @@ type UDPClient struct {
 	retries     int
 }
 
-func NewClient(addr string) (tracker.Announcer, error) {
+func NewClient(urlParsed url.URL) (tracker.Announcer, error) {
+	if urlParsed.Scheme != "udp" {
+		return nil, fmt.Errorf("unsupported scheme: %s", urlParsed.Scheme)
+	}
+
 	return &UDPClient{
-		addr:        addr,
+		addr:        urlParsed.Host,
 		readTimeout: 15 * time.Second,
 		retries:     3,
 	}, nil

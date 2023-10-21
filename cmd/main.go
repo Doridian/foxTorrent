@@ -9,8 +9,7 @@ import (
 	"github.com/Doridian/foxTorrent/sideband/metainfo"
 	"github.com/Doridian/foxTorrent/sideband/tracker"
 	"github.com/Doridian/foxTorrent/sideband/tracker/announce"
-	"github.com/Doridian/foxTorrent/sideband/tracker/http"
-	"github.com/Doridian/foxTorrent/sideband/tracker/udp"
+	"github.com/Doridian/foxTorrent/sideband/tracker/util"
 )
 
 func announceSupported(parsedUrl *url.URL) bool {
@@ -71,21 +70,9 @@ func main() {
 		}
 	}
 
-	var announcer tracker.Announcer
-
-	switch announceUrl.Scheme {
-	case "http", "https":
-		announcer, err = http.NewClient(*announceUrl)
-		if err != nil {
-			log.Fatal(err)
-		}
-	case "udp":
-		announcer, err = udp.NewClient(announceUrl.Host)
-		if err != nil {
-			log.Fatal(err)
-		}
-	default:
-		log.Fatalf("unsupported scheme: %s", announceUrl.Scheme)
+	announcer, err := util.CreateTrackerFromURL(*announceUrl)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	log.Printf("Connecting to announce at %v", announceUrl)
