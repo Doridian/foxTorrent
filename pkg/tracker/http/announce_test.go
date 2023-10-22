@@ -1,6 +1,7 @@
 package http_test
 
 import (
+	"errors"
 	nethttp "net/http"
 	"net/url"
 	"strconv"
@@ -47,7 +48,14 @@ func TestAnnounceUbuntu(t *testing.T) {
 		}),
 	}
 	go func() {
-		_ = announceServer.ListenAndServe()
+		err = announceServer.ListenAndServe()
+		if err == nil {
+			return
+		}
+		if errors.Is(err, nethttp.ErrServerClosed) {
+			return
+		}
+		panic(err)
 	}()
 	defer announceServer.Close()
 
@@ -61,6 +69,7 @@ func TestAnnounceUbuntu(t *testing.T) {
 	assert.NotNil(t, announceResp)
 
 	// Make sure the HTTP call was correct
+	assert.NotNil(t, announcRequest)
 	assert.Equal(t, "/announce", announcRequest.URL.Path)
 	assert.Equal(t, "GET", announcRequest.Method)
 
