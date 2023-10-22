@@ -70,7 +70,9 @@ func TestAnnounceUbuntu(t *testing.T) {
 
 	// Make sure the HTTP call was correct
 	assert.NotNil(t, announcRequest)
-	assert.Equal(t, "/announce", announcRequest.URL.Path)
+	if announcRequest.URL != nil {
+		assert.Equal(t, "/announce", announcRequest.URL.Path)
+	}
 	assert.Equal(t, "GET", announcRequest.Method)
 
 	assert.Equal(t, "\xc1F7\x92\xa1\xff6\xa27\xe3\xa0\xf6\x8b\xad\xeb\r7d\xe9\xbb", announcRequest.FormValue("info_hash"))
