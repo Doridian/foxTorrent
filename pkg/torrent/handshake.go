@@ -70,6 +70,11 @@ func (c *Connection) ReceiveHandshake(respondAfterInfoHash bool) error {
 		}
 	}
 
+	_, err = io.ReadFull(c.conn, buf[bufPos:HandshakeLenFull])
+	if err != nil {
+		return err
+	}
+
 	readPeerID := string(buf[HandshakeLenMin:HandshakeLenFull])
 	if c.remotePeerID != "" && c.remotePeerID != readPeerID {
 		return ErrInvalidHandshake
