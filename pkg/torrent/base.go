@@ -8,11 +8,11 @@ import (
 type Connection struct {
 	conn net.Conn
 
-	infoHashValidator InfoHashValidator
-
 	remotePeerID string
 	localPeerID  string
 	infoHash     []byte
+
+	infoHashValidator InfoHashValidator
 }
 
 type InfoHashValidator func(infoHash []byte) (bool, error)
@@ -23,8 +23,7 @@ func ServeAsInitiator(conn net.Conn, infoHash []byte, localPeerID string, remote
 
 		localPeerID:  localPeerID,
 		remotePeerID: remotePeerID,
-
-		infoHash: infoHash,
+		infoHash:     infoHash,
 	}
 	btConn.infoHashValidator = btConn.infoHashValidatorSelf
 
@@ -46,8 +45,8 @@ func ServeAsRecipient(conn net.Conn, infoHashValidator InfoHashValidator, localP
 
 		localPeerID:  localPeerID,
 		remotePeerID: remotePeerID,
+		infoHash:     nil,
 
-		infoHash:          nil,
 		infoHashValidator: infoHashValidator,
 	}
 
