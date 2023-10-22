@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/Doridian/foxTorrent/pkg/metainfo"
+	"github.com/Doridian/foxTorrent/pkg/torrent"
 	"github.com/Doridian/foxTorrent/pkg/tracker"
 	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
 )
@@ -43,7 +44,7 @@ func main() {
 		panic("totalLen 0")
 	}
 
-	state := &announce.TorrentState{
+	state := &torrent.State{
 		PeerID:     "foxTorrent dummyPeer",
 		Port:       1337,
 		Uploaded:   0,

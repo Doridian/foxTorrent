@@ -2,6 +2,8 @@ package announce
 
 import (
 	"net"
+
+	"github.com/Doridian/foxTorrent/pkg/torrent"
 )
 
 type Peer struct {
@@ -32,18 +34,7 @@ const (
 )
 
 type Announcer interface {
-	Announce(state *TorrentState) (*Announce, error)
-	AnnounceEvent(state *TorrentState, event uint32) (*Announce, error)
+	Announce(state *torrent.State) (*Announce, error)
+	AnnounceEvent(state *torrent.State, event uint32) (*Announce, error)
 	Connect() error
-}
-
-type TorrentState struct {
-	PeerID string
-	Port   uint16
-
-	Uploaded   uint64
-	Downloaded uint64
-	Left       uint64
-
-	InfoHash []byte
 }
