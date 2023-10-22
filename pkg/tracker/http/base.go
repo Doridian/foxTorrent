@@ -3,7 +3,7 @@ package http
 import (
 	"net/url"
 
-	"github.com/Doridian/foxTorrent/pkg/tracker"
+	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
 )
 
 type HTTPClient struct {
@@ -11,7 +11,7 @@ type HTTPClient struct {
 	trackerID string
 }
 
-func NewClient(urlParsed url.URL) (tracker.Announcer, error) {
+func NewClient(urlParsed url.URL) (announce.Announcer, error) {
 	return &HTTPClient{
 		urlParsed: urlParsed,
 		trackerID: "",

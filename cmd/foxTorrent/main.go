@@ -9,7 +9,6 @@ import (
 	"github.com/Doridian/foxTorrent/pkg/metainfo"
 	"github.com/Doridian/foxTorrent/pkg/tracker"
 	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
-	"github.com/Doridian/foxTorrent/pkg/tracker/util"
 )
 
 func announceSupported(parsedUrl *url.URL) bool {
@@ -70,7 +69,7 @@ func main() {
 		}
 	}
 
-	announcer, err := util.CreateTrackerFromURL(*announceUrl)
+	announcer, err := tracker.CreateFromURL(*announceUrl)
 	if err != nil {
 		log.Fatal(err)
 	}

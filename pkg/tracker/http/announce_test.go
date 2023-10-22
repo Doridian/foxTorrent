@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/Doridian/foxTorrent/pkg/metainfo"
-	"github.com/Doridian/foxTorrent/pkg/tracker"
 	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
 	"github.com/Doridian/foxTorrent/pkg/tracker/http"
 	"github.com/Doridian/foxTorrent/testfiles"
@@ -20,7 +19,7 @@ func TestAnnounceUbuntu(t *testing.T) {
 	meta, err := metainfo.Decode(testfiles.Ubuntu2310LiveServerAMD64IsoTorrent)
 	assert.NoError(t, err)
 
-	state := &tracker.TorrentState{
+	state := &announce.TorrentState{
 		PeerID:     "foxTorrent dummyPeer",
 		Port:       6881,
 		Uploaded:   0,

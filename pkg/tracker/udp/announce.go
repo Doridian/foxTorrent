@@ -6,15 +6,14 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/Doridian/foxTorrent/pkg/tracker"
 	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
 )
 
-func (c *UDPClient) Announce(state *tracker.TorrentState) (*announce.Announce, error) {
+func (c *UDPClient) Announce(state *announce.TorrentState) (*announce.Announce, error) {
 	return c.AnnounceEvent(state, announce.EventNone)
 }
 
-func (c *UDPClient) AnnounceEvent(state *tracker.TorrentState, event uint32) (*announce.Announce, error) {
+func (c *UDPClient) AnnounceEvent(state *announce.TorrentState, event uint32) (*announce.Announce, error) {
 	if c.conn == nil {
 		return nil, errors.New("not connected")
 	}

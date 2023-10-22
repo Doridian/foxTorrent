@@ -1,23 +1,21 @@
 package tracker
 
 import (
-	"github.com/Doridian/foxTorrent/pkg/metainfo"
+	"fmt"
+	"net/url"
+
 	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
+	"github.com/Doridian/foxTorrent/pkg/tracker/http"
+	"github.com/Doridian/foxTorrent/pkg/tracker/udp"
 )
 
-type Announcer interface {
-	Announce(state *TorrentState) (*announce.Announce, error)
-	AnnounceEvent(state *TorrentState, event uint32) (*announce.Announce, error)
-	Connect() error
-}
-
-type TorrentState struct {
-	PeerID string
-	Port   uint16
-
-	Uploaded   uint64
-	Downloaded uint64
-	Left       uint64
-
-	Meta *metainfo.Metainfo
+func CreateFromURL(parsedURL url.URL) (announce.Announcer, error) {
+	switch parsedURL.Scheme {
+	case "http", "https":
+		return http.NewClient(parsedURL)
+	case "udp":
+		return udp.NewClient(parsedURL)
+	default:
+		return nil, fmt.Errorf("unsupported scheme: %s", parsedURL.Scheme)
+	}
 }

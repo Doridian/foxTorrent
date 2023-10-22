@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Doridian/foxTorrent/pkg/tracker"
+	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
 )
 
 const (
@@ -30,7 +30,7 @@ type UDPClient struct {
 	retries     int
 }
 
-func NewClient(urlParsed url.URL) (tracker.Announcer, error) {
+func NewClient(urlParsed url.URL) (announce.Announcer, error) {
 	if urlParsed.Scheme != "udp" {
 		return nil, fmt.Errorf("unsupported scheme: %s", urlParsed.Scheme)
 	}

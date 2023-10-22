@@ -5,15 +5,14 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Doridian/foxTorrent/pkg/tracker"
 	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
 )
 
-func (c *HTTPClient) Announce(state *tracker.TorrentState) (*announce.Announce, error) {
+func (c *HTTPClient) Announce(state *announce.TorrentState) (*announce.Announce, error) {
 	return c.AnnounceEvent(state, announce.EventNone)
 }
 
-func (c *HTTPClient) AnnounceEvent(state *tracker.TorrentState, event uint32) (*announce.Announce, error) {
+func (c *HTTPClient) AnnounceEvent(state *announce.TorrentState, event uint32) (*announce.Announce, error) {
 	useUrl := c.urlParsed
 
 	query := useUrl.Query()
