@@ -13,6 +13,7 @@ import (
 	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
 	"github.com/Doridian/foxTorrent/pkg/tracker/http"
 	"github.com/Doridian/foxTorrent/testfiles"
+	"github.com/Workiva/go-datastructures/bitarray"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -27,6 +28,7 @@ func TestAnnounceUbuntu(t *testing.T) {
 		Downloaded: 0,
 		Left:       meta.TotalLength(),
 		InfoHash:   meta.InfoHash,
+		Pieces:     bitarray.NewBitArray(uint64(len(meta.Info.Pieces))),
 	}
 
 	var announcRequest nethttp.Request

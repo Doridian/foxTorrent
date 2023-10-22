@@ -10,6 +10,7 @@ import (
 	"github.com/Doridian/foxTorrent/pkg/torrent/state"
 	"github.com/Doridian/foxTorrent/pkg/tracker"
 	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
+	"github.com/Workiva/go-datastructures/bitarray"
 )
 
 func announceSupported(parsedUrl *url.URL) bool {
@@ -51,6 +52,7 @@ func main() {
 		Downloaded: 0,
 		Left:       totalLen,
 		InfoHash:   meta.InfoHash,
+		Pieces:     bitarray.NewBitArray(uint64(len(meta.Info.Pieces))),
 	}
 
 	var announceUrl *url.URL

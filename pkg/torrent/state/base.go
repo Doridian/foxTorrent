@@ -1,5 +1,7 @@
 package state
 
+import "github.com/Workiva/go-datastructures/bitarray"
+
 type State struct {
 	PeerID string
 	Port   uint16
@@ -9,4 +11,5 @@ type State struct {
 	Left       uint64
 
 	InfoHash []byte
+	Pieces   bitarray.BitArray
 }

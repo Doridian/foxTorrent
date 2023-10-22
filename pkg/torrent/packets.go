@@ -10,6 +10,19 @@ type Packet struct {
 	Payload []byte
 }
 
+const (
+	PacketChoke         = 0
+	PacketUnchoke       = 1
+	PacketInterested    = 2
+	PacketNotInterested = 3
+	PacketHave          = 4
+	PacketBitfield      = 5
+	PacketRequest       = 6
+	PacketPiece         = 7
+	PacketCancel        = 8
+	PacketPort          = 9
+)
+
 func (c *Connection) ReadPacket() (*Packet, error) {
 	packetLen := make([]byte, 4)
 	_, err := io.ReadFull(c.conn, packetLen)
@@ -35,6 +48,8 @@ func (c *Connection) ReadPacket() (*Packet, error) {
 }
 
 func (c *Connection) WritePacket(packet *Packet) error {
+	c.canSendBitfield = false
+
 	payload := make([]byte, 0, 4+1+len(packet.Payload))
 	payload = binary.BigEndian.AppendUint32(payload, uint32(1+len(packet.Payload)))
 	payload = append(payload, packet.ID)
