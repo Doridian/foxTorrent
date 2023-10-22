@@ -20,5 +20,5 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           version: latest
-      - run: go build -o ./foxTorrent ./cmd/foxTorrent
+      - run: go build -trimpath -ldflags "-w -s" -o ./foxTorrent ./cmd/foxTorrent
       - run: go test -v ./...
