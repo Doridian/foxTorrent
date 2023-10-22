@@ -2,6 +2,7 @@ package http_test
 
 import (
 	"errors"
+	"net"
 	nethttp "net/http"
 	"net/url"
 	"strconv"
@@ -29,37 +30,43 @@ func TestAnnounceUbuntu(t *testing.T) {
 	}
 
 	var announcRequest nethttp.Request
+	announcRequest.URL = &url.URL{}
 
-	announceServer := nethttp.Server{
-		Addr: "127.0.0.1:60881",
-		Handler: nethttp.HandlerFunc(func(w nethttp.ResponseWriter, r *nethttp.Request) {
-			if r.URL.Path != "/announce" {
-				w.WriteHeader(nethttp.StatusNotFound)
-				return
-			}
-			if r.Method != "GET" {
-				w.WriteHeader(nethttp.StatusMethodNotAllowed)
-				return
-			}
+	httpHandler := nethttp.HandlerFunc(func(w nethttp.ResponseWriter, r *nethttp.Request) {
+		if r.URL.Path != "/announce" {
+			w.WriteHeader(nethttp.StatusNotFound)
+			return
+		}
+		if r.Method != "GET" {
+			w.WriteHeader(nethttp.StatusMethodNotAllowed)
+			return
+		}
 
-			announcRequest = *r
-			w.Header().Set("Content-Type", "text/plain")
-			_, _ = w.Write(testfiles.Ubuntu2310LiveServerAMD64IsoAnnounce)
-		}),
-	}
+		announcRequest = *r
+		w.Header().Set("Content-Type", "text/plain")
+		_, _ = w.Write(testfiles.Ubuntu2310LiveServerAMD64IsoAnnounce)
+	})
+
+	announceServer, err := net.ListenTCP("tcp", &net.TCPAddr{IP: net.IPv4(127, 0, 0, 1), Port: 0})
+	assert.NoError(t, err)
+
 	go func() {
-		err = announceServer.ListenAndServe()
+		err = nethttp.Serve(announceServer, httpHandler)
 		if err == nil {
 			return
 		}
-		if errors.Is(err, nethttp.ErrServerClosed) {
+		if errors.Is(err, net.ErrClosed) {
 			return
 		}
 		panic(err)
 	}()
 	defer announceServer.Close()
 
-	parsedUrl, err := url.Parse("http://127.0.0.1:60881/announce")
+	parsedUrl := &url.URL{
+		Scheme: "http",
+		Host:   announceServer.Addr().String(),
+		Path:   "/announce",
+	}
 	assert.NoError(t, err)
 	client, err := http.NewClient(*parsedUrl)
 	assert.NoError(t, err)
@@ -70,9 +77,7 @@ func TestAnnounceUbuntu(t *testing.T) {
 
 	// Make sure the HTTP call was correct
 	assert.NotNil(t, announcRequest)
-	if announcRequest.URL != nil {
-		assert.Equal(t, "/announce", announcRequest.URL.Path)
-	}
+	assert.Equal(t, "/announce", announcRequest.URL.Path)
 	assert.Equal(t, "GET", announcRequest.Method)
 
 	assert.Equal(t, "\xc1F7\x92\xa1\xff6\xa27\xe3\xa0\xf6\x8b\xad\xeb\r7d\xe9\xbb", announcRequest.FormValue("info_hash"))

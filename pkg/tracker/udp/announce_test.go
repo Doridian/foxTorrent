@@ -34,7 +34,7 @@ func TestAnnounceUbuntu(t *testing.T) {
 
 	announceServer, err := net.ListenUDP("udp", &net.UDPAddr{
 		IP:   net.ParseIP("127.0.0.1"),
-		Port: 60881,
+		Port: 0,
 	})
 	assert.NoError(t, err)
 
@@ -101,7 +101,11 @@ func TestAnnounceUbuntu(t *testing.T) {
 
 	defer announceServer.Close()
 
-	parsedUrl, _ := url.Parse("udp://127.0.0.1:60881")
+	parsedUrl := &url.URL{
+		Scheme: "udp",
+		Host:   announceServer.LocalAddr().String(),
+		Path:   "",
+	}
 	client, err := udp.NewClient(*parsedUrl)
 	assert.NoError(t, err)
 	client.(*udp.UDPClient).SetReadTimeout(1 * time.Second)
