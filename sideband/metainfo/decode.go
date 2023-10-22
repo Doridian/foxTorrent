@@ -174,8 +174,6 @@ func Decode(data []byte) (*Metainfo, error) {
 
 		infoDictTyped.Files = []FileInfo{singleFile}
 	} else { // optional, but if missing must mean multi-file mode!
-		baseNameString := string(baseNameTyped)
-
 		filesRaw, ok := infoDict["files"]
 		if !ok { // required
 			return nil, bencoding.ErrMissingRequiredField
@@ -184,6 +182,7 @@ func Decode(data []byte) (*Metainfo, error) {
 		if !ok {
 			return nil, bencoding.ErrInvalidType
 		}
+		baseNameString := string(baseNameTyped)
 		files := make([]FileInfo, 0, len(filesRawTyped))
 		for _, fileRaw := range filesRawTyped {
 			fileRawTyped, ok := fileRaw.(map[string]interface{})
