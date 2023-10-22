@@ -13,8 +13,7 @@ type InfoDict struct {
 	Pieces      [][]byte
 	Private     bool
 
-	BaseName string
-	Files    []FileInfo
+	Files []FileInfo
 }
 
 type Metainfo struct {

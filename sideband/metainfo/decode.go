@@ -155,7 +155,6 @@ func Decode(data []byte) (*Metainfo, error) {
 
 	lengthRaw, ok := infoDict["length"]
 	if ok { // optional, indicates single-file mode
-		infoDictTyped.BaseName = ""
 		singleFile := FileInfo{
 			Path: []string{string(baseNameTyped)},
 		}
@@ -175,7 +174,7 @@ func Decode(data []byte) (*Metainfo, error) {
 
 		infoDictTyped.Files = []FileInfo{singleFile}
 	} else { // optional, but if missing must mean multi-file mode!
-		infoDictTyped.BaseName = string(baseNameTyped)
+		baseNameString := string(baseNameTyped)
 
 		filesRaw, ok := infoDict["files"]
 		if !ok { // required
@@ -219,7 +218,8 @@ func Decode(data []byte) (*Metainfo, error) {
 			if !ok {
 				return nil, bencoding.ErrInvalidType
 			}
-			path := make([]string, 0, len(pathRawTyped))
+			path := make([]string, 0, len(pathRawTyped)+1)
+			path = append(path, baseNameString)
 			for _, pathEntry := range pathRawTyped {
 				pathEntryString, ok := pathEntry.([]byte)
 				if !ok {

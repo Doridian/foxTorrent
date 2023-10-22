@@ -22,7 +22,6 @@ func TestDecodeUbuntuTorrent(t *testing.T) {
 	assert.Equal(t, 10156, len(meta.Info.Pieces))
 
 	assert.Equal(t, []byte{0xc1, 0x46, 0x37, 0x92, 0xa1, 0xff, 0x36, 0xa2, 0x37, 0xe3, 0xa0, 0xf6, 0x8b, 0xad, 0xeb, 0x0d, 0x37, 0x64, 0xe9, 0xbb}, meta.InfoHash)
-	assert.Equal(t, "", meta.Info.BaseName)
 	assert.Equal(t, uint64(0x40000), meta.Info.PieceLength)
 	assert.Equal(t, false, meta.Info.Private)
 	assert.Equal(t, []metainfo.FileInfo{
