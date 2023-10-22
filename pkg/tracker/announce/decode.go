@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/Doridian/foxTorrent/bencoding"
+	"github.com/Doridian/foxTorrent/pkg/bencoding"
 )
 
 func Decode(data []byte) (*Announce, error) {

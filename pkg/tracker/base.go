@@ -1,8 +1,8 @@
 package tracker
 
 import (
-	"github.com/Doridian/foxTorrent/sideband/metainfo"
-	"github.com/Doridian/foxTorrent/sideband/tracker/announce"
+	"github.com/Doridian/foxTorrent/pkg/metainfo"
+	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
 )
 
 type Announcer interface {

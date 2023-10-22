@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/Doridian/foxTorrent/sideband/tracker"
-	"github.com/Doridian/foxTorrent/sideband/tracker/announce"
+	"github.com/Doridian/foxTorrent/pkg/tracker"
+	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
 )
 
 func (c *UDPClient) Announce(state *tracker.TorrentState) (*announce.Announce, error) {

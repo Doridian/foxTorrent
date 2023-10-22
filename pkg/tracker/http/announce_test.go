@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/Doridian/foxTorrent/sideband/metainfo"
-	"github.com/Doridian/foxTorrent/sideband/tracker"
-	"github.com/Doridian/foxTorrent/sideband/tracker/announce"
-	"github.com/Doridian/foxTorrent/sideband/tracker/http"
+	"github.com/Doridian/foxTorrent/pkg/metainfo"
+	"github.com/Doridian/foxTorrent/pkg/tracker"
+	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
+	"github.com/Doridian/foxTorrent/pkg/tracker/http"
 	"github.com/Doridian/foxTorrent/testfiles"
 	"github.com/stretchr/testify/assert"
 )
@@ -47,10 +47,7 @@ func TestAnnounceUbuntu(t *testing.T) {
 		}),
 	}
 	go func() {
-		err := announceServer.ListenAndServe()
-		if err != nil {
-			panic(err)
-		}
+		_ = announceServer.ListenAndServe()
 	}()
 	defer announceServer.Close()
 

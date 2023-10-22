@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Doridian/foxTorrent/bencoding"
+	"github.com/Doridian/foxTorrent/pkg/bencoding"
 )
 
 func Decode(data []byte) (*Metainfo, error) {

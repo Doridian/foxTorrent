@@ -3,7 +3,7 @@ package http
 import (
 	"net/url"
 
-	"github.com/Doridian/foxTorrent/sideband/tracker"
+	"github.com/Doridian/foxTorrent/pkg/tracker"
 )
 
 type HTTPClient struct {

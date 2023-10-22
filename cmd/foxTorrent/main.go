@@ -6,10 +6,10 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/Doridian/foxTorrent/sideband/metainfo"
-	"github.com/Doridian/foxTorrent/sideband/tracker"
-	"github.com/Doridian/foxTorrent/sideband/tracker/announce"
-	"github.com/Doridian/foxTorrent/sideband/tracker/util"
+	"github.com/Doridian/foxTorrent/pkg/metainfo"
+	"github.com/Doridian/foxTorrent/pkg/tracker"
+	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
+	"github.com/Doridian/foxTorrent/pkg/tracker/util"
 )
 
 func announceSupported(parsedUrl *url.URL) bool {

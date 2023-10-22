@@ -4,7 +4,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/Doridian/foxTorrent/sideband/tracker/announce"
+	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
 	"github.com/Doridian/foxTorrent/testfiles"
 	"github.com/stretchr/testify/assert"
 )

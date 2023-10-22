@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Doridian/foxTorrent/sideband/tracker"
+	"github.com/Doridian/foxTorrent/pkg/tracker"
 )
 
 const (

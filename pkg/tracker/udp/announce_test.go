@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Doridian/foxTorrent/sideband/metainfo"
-	"github.com/Doridian/foxTorrent/sideband/tracker"
-	"github.com/Doridian/foxTorrent/sideband/tracker/announce"
-	"github.com/Doridian/foxTorrent/sideband/tracker/udp"
+	"github.com/Doridian/foxTorrent/pkg/metainfo"
+	"github.com/Doridian/foxTorrent/pkg/tracker"
+	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
+	"github.com/Doridian/foxTorrent/pkg/tracker/udp"
 	"github.com/Doridian/foxTorrent/testfiles"
 	"github.com/stretchr/testify/assert"
 )

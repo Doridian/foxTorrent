@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/Doridian/foxTorrent/sideband/tracker"
-	"github.com/Doridian/foxTorrent/sideband/tracker/http"
-	"github.com/Doridian/foxTorrent/sideband/tracker/udp"
+	"github.com/Doridian/foxTorrent/pkg/tracker"
+	"github.com/Doridian/foxTorrent/pkg/tracker/http"
+	"github.com/Doridian/foxTorrent/pkg/tracker/udp"
 )
 
 func CreateTrackerFromURL(parsedURL url.URL) (tracker.Announcer, error) {

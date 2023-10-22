@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Doridian/foxTorrent/sideband/metainfo"
+	"github.com/Doridian/foxTorrent/pkg/metainfo"
 	"github.com/Doridian/foxTorrent/testfiles"
 	"github.com/stretchr/testify/assert"
 )
