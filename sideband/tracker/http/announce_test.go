@@ -43,10 +43,15 @@ func TestAnnounceUbuntu(t *testing.T) {
 
 			announcRequest = *r
 			w.Header().Set("Content-Type", "text/plain")
-			w.Write(testfiles.Ubuntu2310LiveServerAMD64IsoAnnounce)
+			_, _ = w.Write(testfiles.Ubuntu2310LiveServerAMD64IsoAnnounce)
 		}),
 	}
-	go announceServer.ListenAndServe()
+	go func() {
+		err := announceServer.ListenAndServe()
+		if err != nil {
+			panic(err)
+		}
+	}()
 	defer announceServer.Close()
 
 	parsedUrl, err := url.Parse("http://127.0.0.1:60881/announce")
