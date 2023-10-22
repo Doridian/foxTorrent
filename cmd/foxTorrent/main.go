@@ -43,7 +43,7 @@ func main() {
 		panic("totalLen 0")
 	}
 
-	state := &tracker.TorrentState{
+	state := &announce.TorrentState{
 		PeerID:     "foxTorrent dummyPeer",
 		Port:       1337,
 		Uploaded:   0,
