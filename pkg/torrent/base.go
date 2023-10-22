@@ -5,17 +5,6 @@ import (
 	"net"
 )
 
-type State struct {
-	PeerID string
-	Port   uint16
-
-	Uploaded   uint64
-	Downloaded uint64
-	Left       uint64
-
-	InfoHash []byte
-}
-
 type Connection struct {
 	conn net.Conn
 
@@ -28,11 +17,14 @@ type Connection struct {
 
 type InfoHashValidator func(infoHash []byte) (bool, error)
 
-func ServeAsInitiator(conn net.Conn, state *State) (*Connection, error) {
-	ourInfoHash := state.InfoHash
+func ServeAsInitiator(conn net.Conn, infoHash []byte, localPeerID string, remotePeerID string) (*Connection, error) {
 	btConn := &Connection{
-		conn:     conn,
-		infoHash: ourInfoHash,
+		conn: conn,
+
+		localPeerID:  localPeerID,
+		remotePeerID: remotePeerID,
+
+		infoHash: infoHash,
 	}
 	btConn.infoHashValidator = btConn.infoHashValidatorSelf
 
@@ -48,9 +40,13 @@ func ServeAsInitiator(conn net.Conn, state *State) (*Connection, error) {
 	return btConn, nil
 }
 
-func ServeAsRecipient(conn net.Conn, infoHashValidator InfoHashValidator) (*Connection, error) {
+func ServeAsRecipient(conn net.Conn, infoHashValidator InfoHashValidator, localPeerID string, remotePeerID string) (*Connection, error) {
 	btConn := &Connection{
-		conn:              conn,
+		conn: conn,
+
+		localPeerID:  localPeerID,
+		remotePeerID: remotePeerID,
+
 		infoHash:          nil,
 		infoHashValidator: infoHashValidator,
 	}
@@ -69,4 +65,16 @@ func (c *Connection) infoHashValidatorSelf(infoHash []byte) (bool, error) {
 
 func (c *Connection) Close() error {
 	return c.conn.Close()
+}
+
+func (c *Connection) RemotePeerID() string {
+	return c.remotePeerID
+}
+
+func (c *Connection) LocalPeerID() string {
+	return c.localPeerID
+}
+
+func (c *Connection) InfoHash() []byte {
+	return c.infoHash
 }

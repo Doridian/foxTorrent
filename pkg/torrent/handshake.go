@@ -58,6 +58,9 @@ func (c *Connection) ReceiveHandshake(respondAfterInfoHash bool) error {
 		return ErrInvalidHandshake
 	}
 
+	c.infoHash = readInfoHash
+	c.infoHashValidator = c.infoHashValidatorSelf
+
 	if respondAfterInfoHash {
 		err = c.TransmitHandshake()
 		if err != nil {

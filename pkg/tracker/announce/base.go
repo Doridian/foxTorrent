@@ -3,7 +3,7 @@ package announce
 import (
 	"net"
 
-	"github.com/Doridian/foxTorrent/pkg/torrent"
+	"github.com/Doridian/foxTorrent/pkg/torrent/state"
 )
 
 type Peer struct {
@@ -34,7 +34,7 @@ const (
 )
 
 type Announcer interface {
-	Announce(state *torrent.State) (*Announce, error)
-	AnnounceEvent(state *torrent.State, event uint32) (*Announce, error)
+	Announce(state *state.State) (*Announce, error)
+	AnnounceEvent(state *state.State, event uint32) (*Announce, error)
 	Connect() error
 }
