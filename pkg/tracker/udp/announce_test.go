@@ -28,7 +28,7 @@ func TestAnnounceUbuntu(t *testing.T) {
 		Uploaded:   0,
 		Downloaded: 0,
 		Left:       meta.TotalLength(),
-		Meta:       meta,
+		InfoHash:   meta.InfoHash,
 	}
 
 	announceServer, err := net.ListenUDP("udp", &net.UDPAddr{

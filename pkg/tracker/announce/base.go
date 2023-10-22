@@ -2,8 +2,6 @@ package announce
 
 import (
 	"net"
-
-	"github.com/Doridian/foxTorrent/pkg/metainfo"
 )
 
 type Peer struct {
@@ -47,5 +45,5 @@ type TorrentState struct {
 	Downloaded uint64
 	Left       uint64
 
-	Meta *metainfo.Metainfo
+	InfoHash []byte
 }

@@ -49,7 +49,7 @@ func main() {
 		Uploaded:   0,
 		Downloaded: 0,
 		Left:       totalLen,
-		Meta:       meta,
+		InfoHash:   meta.InfoHash,
 	}
 
 	var announceUrl *url.URL

@@ -19,7 +19,7 @@ func (c *UDPClient) AnnounceEvent(state *announce.TorrentState, event uint32) (*
 	}
 
 	announcePayload := make([]byte, 0, 82)
-	announcePayload = append(announcePayload, state.Meta.InfoHash...)
+	announcePayload = append(announcePayload, state.InfoHash...)
 	announcePayload = append(announcePayload, []byte(state.PeerID)...)
 	announcePayload = binary.BigEndian.AppendUint64(announcePayload, state.Downloaded)
 	announcePayload = binary.BigEndian.AppendUint64(announcePayload, state.Left)

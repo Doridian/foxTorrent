@@ -16,7 +16,7 @@ func (c *HTTPClient) AnnounceEvent(state *announce.TorrentState, event uint32) (
 	useUrl := c.urlParsed
 
 	query := useUrl.Query()
-	query.Set("info_hash", string(state.Meta.InfoHash))
+	query.Set("info_hash", string(state.InfoHash))
 	query.Set("peer_id", state.PeerID)
 	query.Set("port", strconv.FormatUint(uint64(state.Port), 10))
 	query.Set("compact", "1")

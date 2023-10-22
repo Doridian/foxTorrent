@@ -25,7 +25,7 @@ func TestAnnounceUbuntu(t *testing.T) {
 		Uploaded:   0,
 		Downloaded: 0,
 		Left:       meta.TotalLength(),
-		Meta:       meta,
+		InfoHash:   meta.InfoHash,
 	}
 
 	var announcRequest nethttp.Request
