@@ -1,3 +1,3 @@
-Remove-Item ./fox-torrent.exe
-go build -o ./fox-torrent.exe ./cmd
-./fox-torrent.exe testfiles/ubuntu-23.10-live-server-amd64.iso.torrent
+Remove-Item ./foxTorrent.exe
+go build -o ./foxTorrent.exe ./cmd/foxTorrent
+./foxTorrent.exe testfiles/ubuntu-23.10-live-server-amd64.iso.torrent
