@@ -14,25 +14,27 @@ type State struct {
 	Left       uint64
 
 	InfoHash []byte
-
-	handshake []byte
 }
 
 type Connection struct {
-	conn         net.Conn
-	stateLookup  StateLookup
-	state        *State
+	conn net.Conn
+
+	infoHashValidator InfoHashValidator
+
 	remotePeerID string
+	localPeerID  string
+	infoHash     []byte
 }
 
-type StateLookup func(infoHash []byte) (*State, error)
+type InfoHashValidator func(infoHash []byte) (bool, error)
 
 func ServeAsInitiator(conn net.Conn, state *State) (*Connection, error) {
+	ourInfoHash := state.InfoHash
 	btConn := &Connection{
-		conn:        conn,
-		stateLookup: nil,
-		state:       state,
+		conn:     conn,
+		infoHash: ourInfoHash,
 	}
+	btConn.infoHashValidator = btConn.infoHashValidatorSelf
 
 	err := btConn.TransmitHandshake()
 	if err != nil {
@@ -46,11 +48,11 @@ func ServeAsInitiator(conn net.Conn, state *State) (*Connection, error) {
 	return btConn, nil
 }
 
-func ServeAsRecipient(conn net.Conn, stateLookup StateLookup) (*Connection, error) {
+func ServeAsRecipient(conn net.Conn, infoHashValidator InfoHashValidator) (*Connection, error) {
 	btConn := &Connection{
-		conn:        conn,
-		stateLookup: stateLookup,
-		state:       nil,
+		conn:              conn,
+		infoHash:          nil,
+		infoHashValidator: infoHashValidator,
 	}
 
 	err := btConn.ReceiveHandshake(true)
@@ -61,23 +63,8 @@ func ServeAsRecipient(conn net.Conn, stateLookup StateLookup) (*Connection, erro
 	return btConn, nil
 }
 
-func (c *Connection) GetState(infoHash []byte) (*State, error) {
-	if c.state == nil {
-		if c.stateLookup == nil {
-			return nil, nil
-		}
-		state, err := c.stateLookup(infoHash)
-		if err != nil {
-			return nil, err
-		}
-		c.state = state
-		return state, nil
-	}
-
-	if !bytes.Equal(c.state.InfoHash, infoHash) {
-		return nil, nil
-	}
-	return c.state, nil
+func (c *Connection) infoHashValidatorSelf(infoHash []byte) (bool, error) {
+	return bytes.Equal(infoHash, c.infoHash), nil
 }
 
 func (c *Connection) Close() error {

@@ -15,22 +15,15 @@ var reservedBytes = []byte{0, 0, 0, 0, 0, 0, 0, 0}
 
 var ErrInvalidHandshake = errors.New("invalid handshake")
 
-func (s *State) Handshake() []byte {
-	if s.handshake == nil {
-		newHandshake := make([]byte, 0, 68)
-		newHandshake = append(newHandshake, uint8(ProtocolStrLen))
-		newHandshake = append(newHandshake, ProtocolStr...)
-		newHandshake = append(newHandshake, reservedBytes...)
-		newHandshake = append(newHandshake, s.InfoHash...)
-		newHandshake = append(newHandshake, s.PeerID...)
-		s.handshake = newHandshake
-	}
-	return s.handshake
-}
-
 func (c *Connection) TransmitHandshake() error {
-	handshakeMsg := c.state.Handshake()
-	_, err := c.conn.Write(handshakeMsg)
+	handshake := make([]byte, 0, 68)
+	handshake = append(handshake, uint8(ProtocolStrLen))
+	handshake = append(handshake, ProtocolStr...)
+	handshake = append(handshake, reservedBytes...)
+	handshake = append(handshake, c.infoHash...)
+	handshake = append(handshake, c.localPeerID...)
+
+	_, err := c.conn.Write(handshake)
 	return err
 }
 
@@ -55,11 +48,13 @@ func (c *Connection) ReceiveHandshake(respondAfterInfoHash bool) error {
 	}
 
 	readInfoHash := buf[HandshakeLenBeforeInfoHash:HandshakeLenMin]
-	state, err := c.GetState(readInfoHash)
+
+	infoHashValid, err := c.infoHashValidator(readInfoHash)
 	if err != nil {
 		return err
 	}
-	if state == nil {
+
+	if !infoHashValid {
 		return ErrInvalidHandshake
 	}
 
