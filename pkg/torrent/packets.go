@@ -3,6 +3,9 @@ package torrent
 import (
 	"encoding/binary"
 	"io"
+	"log"
+
+	"github.com/Workiva/go-datastructures/bitarray"
 )
 
 type Packet struct {
@@ -56,4 +59,52 @@ func (c *Connection) WritePacket(packet *Packet) error {
 	payload = append(payload, packet.Payload...)
 	_, err := c.conn.Write(payload)
 	return err
+}
+
+func (c *Connection) Serve() error {
+	for {
+		packet, err := c.ReadPacket()
+		if err != nil {
+			return err
+		}
+
+		if packet == nil {
+			continue
+		}
+
+		switch packet.ID {
+		case PacketChoke:
+			c.remoteChoking = true
+		case PacketUnchoke:
+			c.remoteChoking = false
+		case PacketInterested:
+			c.remoteInterested = true
+		case PacketNotInterested:
+			c.remoteInterested = false
+		case PacketHave:
+			piece := binary.BigEndian.Uint32(packet.Payload)
+			c.remoteHave.SetBit(uint64(piece))
+		case PacketBitfield:
+			c.remoteHave = bitarray.NewBitArray(uint64(len(packet.Payload)) * 8)
+			// packet.Payload transfer this over
+		case PacketRequest:
+			index := binary.BigEndian.Uint32(packet.Payload[:4])
+			begin := binary.BigEndian.Uint32(packet.Payload[4:8])
+			length := binary.BigEndian.Uint32(packet.Payload[8:12])
+
+			log.Printf("Received request for index %d, begin %d, length %d", index, begin, length)
+		case PacketPiece:
+			index := binary.BigEndian.Uint32(packet.Payload[:4])
+			begin := binary.BigEndian.Uint32(packet.Payload[4:8])
+			block := packet.Payload[8:]
+
+			log.Printf("Received piece for index %d, begin %d, block length %d", index, begin, len(block))
+		case PacketCancel:
+			index := binary.BigEndian.Uint32(packet.Payload[:4])
+			begin := binary.BigEndian.Uint32(packet.Payload[4:8])
+			length := binary.BigEndian.Uint32(packet.Payload[8:12])
+
+			log.Printf("Received cancel for index %d, begin %d, length %d", index, begin, length)
+		}
+	}
 }
