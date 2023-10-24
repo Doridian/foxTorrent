@@ -30,7 +30,7 @@ type Connection struct {
 	remoteHave      bitarray.BitArray
 	canSendBitfield bool
 
-	pieceRequests    map[uint32]map[uint32]*PieceRequest
+	pieceRequests    map[uint64]*PieceRequest
 	pieceRequestLock sync.Mutex
 
 	OnPieceRequest OnPieceRequestHandler
@@ -56,7 +56,7 @@ func ServeAsInitiator(conn net.Conn, infoHash []byte, localPeerID string, remote
 		remoteHave:      bitarray.NewBitArray(0),
 		canSendBitfield: true,
 
-		pieceRequests: make(map[uint32]map[uint32]*PieceRequest),
+		pieceRequests: make(map[uint64]*PieceRequest),
 	}
 	btConn.infoHashValidator = btConn.infoHashValidatorSelf
 
@@ -91,7 +91,7 @@ func ServeAsRecipient(conn net.Conn, infoHashValidator InfoHashValidator, localP
 		remoteHave:      bitarray.NewBitArray(0),
 		canSendBitfield: true,
 
-		pieceRequests: make(map[uint32]map[uint32]*PieceRequest),
+		pieceRequests: make(map[uint64]*PieceRequest),
 	}
 
 	err := btConn.ReceiveHandshake(true)

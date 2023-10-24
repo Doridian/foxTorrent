@@ -12,16 +12,14 @@ type PieceRequest struct {
 	Callback func([]byte)
 }
 
+func mapIndex(index uint32, begin uint32) uint64 {
+	return uint64(index)<<32 | uint64(begin)
+}
+
 func (c *Connection) RequestPiece(request *PieceRequest) error {
 	c.pieceRequestLock.Lock()
 	defer c.pieceRequestLock.Unlock()
-
-	indexQueue := c.pieceRequests[request.Index]
-	if indexQueue == nil {
-		indexQueue = make(map[uint32]*PieceRequest)
-		c.pieceRequests[request.Index] = indexQueue
-	}
-	indexQueue[request.Begin] = request
+	c.pieceRequests[mapIndex(request.Index, request.Begin)] = request
 
 	c.setInterested(true)
 
@@ -39,13 +37,7 @@ func (c *Connection) CancelPiece(request *PieceRequest) error {
 	c.pieceRequestLock.Lock()
 	defer c.pieceRequestLock.Unlock()
 
-	indexQueue := c.pieceRequests[request.Index]
-	if indexQueue != nil {
-		delete(indexQueue, request.Begin)
-		if len(indexQueue) == 0 {
-			delete(c.pieceRequests, request.Index)
-		}
-	}
+	delete(c.pieceRequests, mapIndex(request.Index, request.Begin))
 
 	payload := make([]byte, 0, 12)
 	payload = binary.BigEndian.AppendUint32(payload, request.Index)
@@ -65,22 +57,15 @@ func (c *Connection) onPieceData(index uint32, begin uint32, data []byte) error 
 	c.pieceRequestLock.Lock()
 	defer c.pieceRequestLock.Unlock()
 
-	indexQueue := c.pieceRequests[index]
-	if indexQueue == nil {
+	pieceMapIndex := mapIndex(index, begin)
+	pieceRequest := c.pieceRequests[pieceMapIndex]
+	if pieceRequest == nil {
 		return nil
 	}
 
-	handledPieceRequest := indexQueue[begin]
-	if handledPieceRequest == nil {
-		return nil
-	}
+	go pieceRequest.Callback(data)
 
-	go handledPieceRequest.Callback(data)
-
-	delete(indexQueue, begin)
-	if len(indexQueue) == 0 {
-		delete(c.pieceRequests, index)
-	}
+	delete(c.pieceRequests, pieceMapIndex)
 
 	return nil
 }
