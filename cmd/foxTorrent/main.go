@@ -109,6 +109,16 @@ func main() {
 		log.Fatal(err)
 	}
 
+	dummyRequest := torrent.PieceRequest{
+		Index:  0,
+		Begin:  0,
+		Length: 1024,
+		Callback: func(index uint32, block []byte) {
+			log.Printf("Received block for index %d, begin %d, length %d", index, 0, len(block))
+		},
+	}
+	client.RequestPiece(&dummyRequest)
+
 	err = client.Serve()
 	if err != nil {
 		log.Fatal(err)
