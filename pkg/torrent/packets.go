@@ -6,7 +6,7 @@ import (
 	"io"
 	"log"
 
-	"github.com/Workiva/go-datastructures/bitarray"
+	"github.com/Doridian/foxTorrent/pkg/bitfield"
 )
 
 type SendPieceReply func(piece []byte) error
@@ -118,17 +118,7 @@ func (c *Connection) serve() error {
 				return errors.New("unexpected bitfield packet")
 			}
 
-			newRemoteHave := bitarray.NewBitArray(uint64(len(packet.Payload)) * 8)
-
-			for i := 0; i < len(packet.Payload); i++ {
-				for j := 0; j < 8; j++ {
-					if packet.Payload[i]&(1<<uint(7-j)) != 0 {
-						newRemoteHave.SetBit(uint64(i*8 + j))
-					}
-				}
-			}
-
-			c.remoteHave = newRemoteHave
+			c.remoteHave = bitfield.NewBitfieldFromBytes(packet.Payload)
 
 			if c.OnHaveUpdated != nil {
 				go c.OnHaveUpdated(c, -1)

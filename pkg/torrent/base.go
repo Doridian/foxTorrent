@@ -5,7 +5,7 @@ import (
 	"net"
 	"sync"
 
-	"github.com/Workiva/go-datastructures/bitarray"
+	"github.com/Doridian/foxTorrent/pkg/bitfield"
 )
 
 type OnPieceRequestHandler func(conn *Connection, index uint32, begin uint32, length uint32, reply SendPieceReply) error
@@ -24,8 +24,8 @@ type Connection struct {
 	localInterested  bool
 	remoteInterested bool
 
-	localHave       bitarray.BitArray
-	remoteHave      bitarray.BitArray
+	localHave       *bitfield.Bitfield
+	remoteHave      *bitfield.Bitfield
 	canSendBitfield bool
 
 	pieceRequests    map[uint64]*PieceRequest
@@ -52,8 +52,8 @@ func ServeAsInitiator(conn net.Conn, infoHash []byte, localPeerID string, remote
 		localInterested:  false,
 		remoteInterested: false,
 
-		localHave:       bitarray.NewBitArray(0),
-		remoteHave:      bitarray.NewBitArray(0),
+		localHave:       bitfield.NewBitfield(0),
+		remoteHave:      bitfield.NewBitfield(0),
 		canSendBitfield: true,
 
 		pieceRequests: make(map[uint64]*PieceRequest),
@@ -87,8 +87,8 @@ func ServeAsRecipient(conn net.Conn, infoHashValidator InfoHashValidatorHandler,
 		localInterested:  false,
 		remoteInterested: false,
 
-		localHave:       bitarray.NewBitArray(0),
-		remoteHave:      bitarray.NewBitArray(0),
+		localHave:       bitfield.NewBitfield(0),
+		remoteHave:      bitfield.NewBitfield(0),
 		canSendBitfield: true,
 
 		pieceRequests: make(map[uint64]*PieceRequest),

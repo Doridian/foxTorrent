@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/Doridian/foxTorrent/pkg/bitfield"
 	"github.com/Doridian/foxTorrent/pkg/metainfo"
 	"github.com/Doridian/foxTorrent/pkg/torrent/state"
 	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
 	"github.com/Doridian/foxTorrent/pkg/tracker/http"
 	"github.com/Doridian/foxTorrent/testfiles"
-	"github.com/Workiva/go-datastructures/bitarray"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,7 +28,7 @@ func TestAnnounceUbuntu(t *testing.T) {
 		Downloaded: 0,
 		Left:       meta.TotalLength(),
 		InfoHash:   meta.InfoHash,
-		Pieces:     bitarray.NewBitArray(uint64(len(meta.Info.Pieces))),
+		Pieces:     bitfield.NewBitfield(uint64(len(meta.Info.Pieces))),
 	}
 
 	var announcRequest nethttp.Request

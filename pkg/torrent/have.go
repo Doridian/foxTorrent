@@ -11,15 +11,9 @@ const BitBufferLen = 512
 func (c *Connection) SendHaveState(curState *state.State) error {
 	piecesSent := curState.Pieces
 	if c.canSendBitfield {
-		payload := make([]byte, 0, piecesSent.Count()/8)
-		it := piecesSent.Blocks()
-		for it.Next() {
-			_, block := it.Value()
-			binary.BigEndian.AppendUint64(payload, uint64(block))
-		}
 		err := c.WritePacket(&Packet{
 			ID:      PacketBitfield,
-			Payload: payload,
+			Payload: piecesSent.GetData(),
 		})
 		if err != nil {
 			return err
@@ -31,7 +25,7 @@ func (c *Connection) SendHaveState(curState *state.State) error {
 
 	pieceDelta := piecesSent
 	if c.localHave != nil {
-		pieceDelta = piecesSent.Nand(c.localHave).And(piecesSent)
+		pieceDelta = piecesSent.Delta(c.localHave)
 	}
 
 	setBitBuffer := make([]uint64, 0, BitBufferLen)

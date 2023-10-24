@@ -1,6 +1,8 @@
 package state
 
-import "github.com/Workiva/go-datastructures/bitarray"
+import (
+	"github.com/Doridian/foxTorrent/pkg/bitfield"
+)
 
 type State struct {
 	PeerID string
@@ -11,5 +13,5 @@ type State struct {
 	Left       uint64
 
 	InfoHash []byte
-	Pieces   bitarray.BitArray
+	Pieces   *bitfield.Bitfield
 }
