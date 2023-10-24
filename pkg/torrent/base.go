@@ -8,9 +8,10 @@ import (
 	"github.com/Workiva/go-datastructures/bitarray"
 )
 
-type SendPieceReply = func([]byte) error
-type OnPieceRequestHandler = func(index uint32, begin uint32, length uint32, reply SendPieceReply) error
-type OnPieceCancelHandler = func(index uint32, begin uint32, length uint32) error
+type SendPieceReply func([]byte) error
+type OnPieceRequestHandler func(index uint32, begin uint32, length uint32, reply SendPieceReply) error
+type OnPieceCancelHandler func(index uint32, begin uint32, length uint32) error
+type InfoHashValidator func(infoHash []byte) (bool, error)
 
 type Connection struct {
 	conn net.Conn
@@ -18,8 +19,6 @@ type Connection struct {
 	remotePeerID string
 	localPeerID  string
 	infoHash     []byte
-
-	infoHashValidator InfoHashValidator
 
 	localChoking     bool
 	remoteChoking    bool
@@ -33,11 +32,12 @@ type Connection struct {
 	pieceRequests    map[uint64]*PieceRequest
 	pieceRequestLock sync.Mutex
 
-	OnPieceRequest OnPieceRequestHandler
-	OnPieceCancel  OnPieceCancelHandler
+	OnPieceRequest     OnPieceRequestHandler
+	OnPieceCancel      OnPieceCancelHandler
+	OnRemoteChoke      func(choking bool)
+	OnRemoteInterested func(interested bool)
+	InfoHashValidator  InfoHashValidator
 }
-
-type InfoHashValidator func(infoHash []byte) (bool, error)
 
 func ServeAsInitiator(conn net.Conn, infoHash []byte, localPeerID string, remotePeerID string) (*Connection, error) {
 	btConn := &Connection{
@@ -58,7 +58,7 @@ func ServeAsInitiator(conn net.Conn, infoHash []byte, localPeerID string, remote
 
 		pieceRequests: make(map[uint64]*PieceRequest),
 	}
-	btConn.infoHashValidator = btConn.infoHashValidatorSelf
+	btConn.InfoHashValidator = btConn.infoHashValidatorSelf
 
 	err := btConn.TransmitHandshake()
 	if err != nil {
@@ -80,7 +80,7 @@ func ServeAsRecipient(conn net.Conn, infoHashValidator InfoHashValidator, localP
 		remotePeerID: remotePeerID,
 		infoHash:     nil,
 
-		infoHashValidator: infoHashValidator,
+		InfoHashValidator: infoHashValidator,
 
 		localChoking:     true,
 		remoteChoking:    true,

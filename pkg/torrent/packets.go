@@ -81,15 +81,27 @@ func (c *Connection) serve() error {
 		switch packet.ID {
 		case PacketChoke:
 			c.remoteChoking = true
+			if c.OnRemoteChoke != nil {
+				go c.OnRemoteChoke(true)
+			}
 
 		case PacketUnchoke:
 			c.remoteChoking = false
+			if c.OnRemoteChoke != nil {
+				go c.OnRemoteChoke(false)
+			}
 
 		case PacketInterested:
 			c.remoteInterested = true
+			if c.OnRemoteInterested != nil {
+				go c.OnRemoteInterested(true)
+			}
 
 		case PacketNotInterested:
 			c.remoteInterested = false
+			if c.OnRemoteInterested != nil {
+				go c.OnRemoteInterested(false)
+			}
 
 		case PacketHave:
 			piece := binary.BigEndian.Uint32(packet.Payload)
@@ -125,21 +137,25 @@ func (c *Connection) serve() error {
 				return errors.New("got request while not interested")
 			}
 
-			go func(index uint32, begin uint32, length uint32) {
-				err := c.OnPieceRequest(index, begin, length, func(data []byte) error {
-					payload := make([]byte, 0, 8+len(data))
-					payload = binary.BigEndian.AppendUint32(payload, index)
-					payload = binary.BigEndian.AppendUint32(payload, begin)
-					payload = append(payload, data...)
-					return c.WritePacket(&Packet{
-						ID:      PacketPiece,
-						Payload: payload,
+			if c.OnPieceRequest == nil {
+				log.Printf("got request for piece %d, but no handler is registered", index)
+			} else {
+				go func(index uint32, begin uint32, length uint32) {
+					err := c.OnPieceRequest(index, begin, length, func(data []byte) error {
+						payload := make([]byte, 0, 8+len(data))
+						payload = binary.BigEndian.AppendUint32(payload, index)
+						payload = binary.BigEndian.AppendUint32(payload, begin)
+						payload = append(payload, data...)
+						return c.WritePacket(&Packet{
+							ID:      PacketPiece,
+							Payload: payload,
+						})
 					})
-				})
-				if err != nil {
-					log.Printf("error handling piece request: %v", err)
-				}
-			}(index, begin, length)
+					if err != nil {
+						log.Printf("error handling piece request: %v", err)
+					}
+				}(index, begin, length)
+			}
 
 		case PacketPiece:
 			index := binary.BigEndian.Uint32(packet.Payload[:4])
@@ -156,9 +172,13 @@ func (c *Connection) serve() error {
 			begin := binary.BigEndian.Uint32(packet.Payload[4:8])
 			length := binary.BigEndian.Uint32(packet.Payload[8:12])
 
-			err := c.OnPieceCancel(index, begin, length)
-			if err != nil {
-				return err
+			if c.OnPieceCancel == nil {
+				log.Printf("got cancel for piece %d, but no handler is registered", index)
+			} else {
+				err := c.OnPieceCancel(index, begin, length)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
