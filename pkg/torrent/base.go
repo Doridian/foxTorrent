@@ -11,7 +11,7 @@ import (
 type SendPieceReply func([]byte) error
 type OnPieceRequestHandler func(index uint32, begin uint32, length uint32, reply SendPieceReply) error
 type OnPieceCancelHandler func(index uint32, begin uint32, length uint32) error
-type InfoHashValidator func(infoHash []byte) (bool, error)
+type InfoHashValidatorHandler func(infoHash []byte) (bool, error)
 
 type Connection struct {
 	conn net.Conn
@@ -36,7 +36,7 @@ type Connection struct {
 	OnPieceCancel      OnPieceCancelHandler
 	OnRemoteChoke      func(choking bool)
 	OnRemoteInterested func(interested bool)
-	InfoHashValidator  InfoHashValidator
+	InfoHashValidator  InfoHashValidatorHandler
 }
 
 func ServeAsInitiator(conn net.Conn, infoHash []byte, localPeerID string, remotePeerID string) (*Connection, error) {
@@ -72,7 +72,7 @@ func ServeAsInitiator(conn net.Conn, infoHash []byte, localPeerID string, remote
 	return btConn, nil
 }
 
-func ServeAsRecipient(conn net.Conn, infoHashValidator InfoHashValidator, localPeerID string, remotePeerID string) (*Connection, error) {
+func ServeAsRecipient(conn net.Conn, infoHashValidator InfoHashValidatorHandler, localPeerID string, remotePeerID string) (*Connection, error) {
 	btConn := &Connection{
 		conn: conn,
 
