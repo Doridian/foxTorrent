@@ -2,6 +2,7 @@ package torrent
 
 import (
 	"encoding/binary"
+	"errors"
 	"io"
 	"log"
 
@@ -75,18 +76,35 @@ func (c *Connection) Serve() error {
 		switch packet.ID {
 		case PacketChoke:
 			c.remoteChoking = true
+			log.Println("Received choke")
 		case PacketUnchoke:
 			c.remoteChoking = false
+			log.Println("Received unchoke")
 		case PacketInterested:
 			c.remoteInterested = true
+			log.Println("Received interested")
 		case PacketNotInterested:
 			c.remoteInterested = false
+			log.Println("Received not interested")
 		case PacketHave:
 			piece := binary.BigEndian.Uint32(packet.Payload)
 			c.remoteHave.SetBit(uint64(piece))
 		case PacketBitfield:
-			c.remoteHave = bitarray.NewBitArray(uint64(len(packet.Payload)) * 8)
-			// packet.Payload transfer this over
+			if !c.remoteHave.IsEmpty() {
+				return errors.New("unexpected bitfield packet")
+			}
+
+			newRemoteHave := bitarray.NewBitArray(uint64(len(packet.Payload)) * 8)
+
+			for i := 0; i < len(packet.Payload); i++ {
+				for j := 0; j < 8; j++ {
+					if packet.Payload[i]&(1<<uint(7-j)) != 0 {
+						newRemoteHave.SetBit(uint64(i*8 + j))
+					}
+				}
+			}
+
+			c.remoteHave = newRemoteHave
 		case PacketRequest:
 			index := binary.BigEndian.Uint32(packet.Payload[:4])
 			begin := binary.BigEndian.Uint32(packet.Payload[4:8])

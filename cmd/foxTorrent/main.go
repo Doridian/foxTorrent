@@ -1,12 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/url"
 	"os"
 
 	"github.com/Doridian/foxTorrent/pkg/metainfo"
+	"github.com/Doridian/foxTorrent/pkg/torrent"
 	"github.com/Doridian/foxTorrent/pkg/torrent/state"
 	"github.com/Doridian/foxTorrent/pkg/tracker"
 	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
@@ -91,4 +94,23 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Printf("%+v", res)
+
+	randomPeer := res.Peers[0]
+
+	log.Printf("Connecting to peer at %v", randomPeer)
+	nc, err := net.Dial("tcp", fmt.Sprintf("[%s]:%d", randomPeer.IP, randomPeer.Port))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Connected. Sending handshake")
+	client, err := torrent.ServeAsInitiator(nc, state.InfoHash, state.PeerID, "")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = client.Serve()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
