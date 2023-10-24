@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
+	"log"
 
 	"github.com/Workiva/go-datastructures/bitarray"
 )
@@ -116,19 +117,21 @@ func (c *Connection) Serve() error {
 				return errors.New("got request while choked")
 			}
 
-			err := c.OnPieceRequest(index, begin, length, func(data []byte) error {
-				payload := make([]byte, 0, 8+len(data))
-				payload = binary.BigEndian.AppendUint32(payload, index)
-				payload = binary.BigEndian.AppendUint32(payload, begin)
-				payload = append(payload, data...)
-				return c.WritePacket(&Packet{
-					ID:      PacketPiece,
-					Payload: payload,
+			go func() {
+				err := c.OnPieceRequest(index, begin, length, func(data []byte) error {
+					payload := make([]byte, 0, 8+len(data))
+					payload = binary.BigEndian.AppendUint32(payload, index)
+					payload = binary.BigEndian.AppendUint32(payload, begin)
+					payload = append(payload, data...)
+					return c.WritePacket(&Packet{
+						ID:      PacketPiece,
+						Payload: payload,
+					})
 				})
-			})
-			if err != nil {
-				return err
-			}
+				if err != nil {
+					log.Printf("error handling piece request: %v", err)
+				}
+			}()
 
 		case PacketPiece:
 			index := binary.BigEndian.Uint32(packet.Payload[:4])
