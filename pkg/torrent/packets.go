@@ -76,16 +76,12 @@ func (c *Connection) Serve() error {
 		switch packet.ID {
 		case PacketChoke:
 			c.remoteChoking = true
-			log.Println("Received choke")
 		case PacketUnchoke:
 			c.remoteChoking = false
-			log.Println("Received unchoke")
 		case PacketInterested:
 			c.remoteInterested = true
-			log.Println("Received interested")
 		case PacketNotInterested:
 			c.remoteInterested = false
-			log.Println("Received not interested")
 		case PacketHave:
 			piece := binary.BigEndian.Uint32(packet.Payload)
 			c.remoteHave.SetBit(uint64(piece))
@@ -117,6 +113,11 @@ func (c *Connection) Serve() error {
 			block := packet.Payload[8:]
 
 			log.Printf("Received piece for index %d, begin %d, block length %d", index, begin, len(block))
+			err := c.onPieceData(index, begin, block)
+			if err != nil {
+				return err
+			}
+
 		case PacketCancel:
 			index := binary.BigEndian.Uint32(packet.Payload[:4])
 			begin := binary.BigEndian.Uint32(packet.Payload[4:8])

@@ -3,6 +3,7 @@ package torrent
 import (
 	"bytes"
 	"net"
+	"sync"
 
 	"github.com/Workiva/go-datastructures/bitarray"
 )
@@ -24,6 +25,10 @@ type Connection struct {
 	localHave       bitarray.BitArray
 	remoteHave      bitarray.BitArray
 	canSendBitfield bool
+
+	pieceRequestQueue   []*PieceRequest
+	pieceQueueLock      sync.Mutex
+	currentPieceRequest *PieceRequest
 }
 
 type InfoHashValidator func(infoHash []byte) (bool, error)
@@ -44,6 +49,8 @@ func ServeAsInitiator(conn net.Conn, infoHash []byte, localPeerID string, remote
 		localHave:       bitarray.NewBitArray(0),
 		remoteHave:      bitarray.NewBitArray(0),
 		canSendBitfield: true,
+
+		pieceRequestQueue: make([]*PieceRequest, 0),
 	}
 	btConn.infoHashValidator = btConn.infoHashValidatorSelf
 
@@ -77,6 +84,8 @@ func ServeAsRecipient(conn net.Conn, infoHashValidator InfoHashValidator, localP
 		localHave:       bitarray.NewBitArray(0),
 		remoteHave:      bitarray.NewBitArray(0),
 		canSendBitfield: true,
+
+		pieceRequestQueue: make([]*PieceRequest, 0),
 	}
 
 	err := btConn.ReceiveHandshake(true)
