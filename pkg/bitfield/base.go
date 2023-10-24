@@ -55,14 +55,23 @@ func (b *Bitfield) Nand(other *Bitfield) *Bitfield {
 	return newBitfield
 }
 
-func (b *Bitfield) GetSetBits(start uint64, buffer []uint64) {
-	for i := range b.data {
-		for j := 0; j < 8; j++ {
+func (b *Bitfield) GetSetBits(start uint64, setBits []uint64) []uint64 {
+	setBitsEnd := uint64(len(b.data))
+
+	setBitsCap := uint64(cap(setBits))
+	setBitsNeeded := setBitsEnd - start
+	if setBitsCap < setBitsNeeded {
+		setBitsEnd = start + setBitsCap
+	}
+
+	for i := start; i < setBitsEnd; i++ {
+		for j := uint64(0); j < 8; j++ {
 			if b.data[i]&(1<<uint(7-j)) != 0 {
-				buffer = append(buffer, uint64(i*8+j)+start)
+				setBits = append(setBits, i*8+j)
 			}
 		}
 	}
+	return setBits
 }
 
 func (b *Bitfield) GetData() []byte {
