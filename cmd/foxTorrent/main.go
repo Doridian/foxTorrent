@@ -97,10 +97,8 @@ func main() {
 
 	var randomPeer *announce.Peer
 	for _, peer := range res.Peers {
-		if peer.Port == 9900 {
-			randomPeer = &peer
-			break
-		}
+		randomPeer = &peer
+		break
 	}
 
 	log.Printf("Connecting to peer at %v", randomPeer)
@@ -115,17 +113,22 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Printf("Sent handshake. Requesting piece")
+	log.Printf("Sent handshake. Waiting for unchoke")
 
-	dummyRequest := torrent.PieceRequest{
-		Index:  0,
-		Begin:  0,
-		Length: 16 * 1024,
-		Callback: func(block []byte) {
-			log.Printf("Received block length %d", len(block))
-		},
+	client.OnRemoteChoke = func(_ *torrent.Connection, choking bool) {
+		if !choking {
+			log.Printf("Unchoked. Requesting piece")
+			dummyRequest := torrent.PieceRequest{
+				Index:  0,
+				Begin:  0,
+				Length: 16 * 1024,
+				Callback: func(block []byte) {
+					log.Printf("Received block length %d", len(block))
+				},
+			}
+			client.RequestPiece(&dummyRequest)
+		}
 	}
-	client.RequestPiece(&dummyRequest)
 
 	err = client.Serve()
 	if err != nil {

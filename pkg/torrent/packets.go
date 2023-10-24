@@ -9,6 +9,8 @@ import (
 	"github.com/Workiva/go-datastructures/bitarray"
 )
 
+type SendPieceReply func(piece []byte) error
+
 type Packet struct {
 	ID      uint8
 	Payload []byte
@@ -82,30 +84,34 @@ func (c *Connection) serve() error {
 		case PacketChoke:
 			c.remoteChoking = true
 			if c.OnRemoteChoke != nil {
-				go c.OnRemoteChoke(true)
+				go c.OnRemoteChoke(c, true)
 			}
 
 		case PacketUnchoke:
 			c.remoteChoking = false
 			if c.OnRemoteChoke != nil {
-				go c.OnRemoteChoke(false)
+				go c.OnRemoteChoke(c, false)
 			}
 
 		case PacketInterested:
 			c.remoteInterested = true
 			if c.OnRemoteInterested != nil {
-				go c.OnRemoteInterested(true)
+				go c.OnRemoteInterested(c, true)
 			}
 
 		case PacketNotInterested:
 			c.remoteInterested = false
 			if c.OnRemoteInterested != nil {
-				go c.OnRemoteInterested(false)
+				go c.OnRemoteInterested(c, false)
 			}
 
 		case PacketHave:
 			piece := binary.BigEndian.Uint32(packet.Payload)
 			c.remoteHave.SetBit(uint64(piece))
+
+			if c.OnHaveUpdated != nil {
+				go c.OnHaveUpdated(c, int64(piece))
+			}
 
 		case PacketBitfield:
 			if !c.remoteHave.IsEmpty() {
@@ -124,6 +130,10 @@ func (c *Connection) serve() error {
 
 			c.remoteHave = newRemoteHave
 
+			if c.OnHaveUpdated != nil {
+				go c.OnHaveUpdated(c, -1)
+			}
+
 		case PacketRequest:
 			index := binary.BigEndian.Uint32(packet.Payload[:4])
 			begin := binary.BigEndian.Uint32(packet.Payload[4:8])
@@ -141,7 +151,7 @@ func (c *Connection) serve() error {
 				log.Printf("got request for piece %d, but no handler is registered", index)
 			} else {
 				go func(index uint32, begin uint32, length uint32) {
-					err := c.OnPieceRequest(index, begin, length, func(data []byte) error {
+					err := c.OnPieceRequest(c, index, begin, length, func(data []byte) error {
 						payload := make([]byte, 0, 8+len(data))
 						payload = binary.BigEndian.AppendUint32(payload, index)
 						payload = binary.BigEndian.AppendUint32(payload, begin)
@@ -175,7 +185,7 @@ func (c *Connection) serve() error {
 			if c.OnPieceCancel == nil {
 				log.Printf("got cancel for piece %d, but no handler is registered", index)
 			} else {
-				err := c.OnPieceCancel(index, begin, length)
+				err := c.OnPieceCancel(c, index, begin, length)
 				if err != nil {
 					return err
 				}

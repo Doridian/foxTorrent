@@ -8,10 +8,9 @@ import (
 	"github.com/Workiva/go-datastructures/bitarray"
 )
 
-type SendPieceReply func([]byte) error
-type OnPieceRequestHandler func(index uint32, begin uint32, length uint32, reply SendPieceReply) error
-type OnPieceCancelHandler func(index uint32, begin uint32, length uint32) error
-type InfoHashValidatorHandler func(infoHash []byte) (bool, error)
+type OnPieceRequestHandler func(conn *Connection, index uint32, begin uint32, length uint32, reply SendPieceReply) error
+type OnPieceCancelHandler func(conn *Connection, index uint32, begin uint32, length uint32) error
+type InfoHashValidatorHandler func(conn *Connection, infoHash []byte) (bool, error)
 
 type Connection struct {
 	conn net.Conn
@@ -34,9 +33,10 @@ type Connection struct {
 
 	OnPieceRequest     OnPieceRequestHandler
 	OnPieceCancel      OnPieceCancelHandler
-	OnRemoteChoke      func(choking bool)
-	OnRemoteInterested func(interested bool)
+	OnRemoteChoke      func(conn *Connection, choking bool)
+	OnRemoteInterested func(conn *Connection, interested bool)
 	InfoHashValidator  InfoHashValidatorHandler
+	OnHaveUpdated      func(conn *Connection, piece int64)
 }
 
 func ServeAsInitiator(conn net.Conn, infoHash []byte, localPeerID string, remotePeerID string) (*Connection, error) {
@@ -102,7 +102,7 @@ func ServeAsRecipient(conn net.Conn, infoHashValidator InfoHashValidatorHandler,
 	return btConn, nil
 }
 
-func (c *Connection) infoHashValidatorSelf(infoHash []byte) (bool, error) {
+func (c *Connection) infoHashValidatorSelf(conn *Connection, infoHash []byte) (bool, error) {
 	return bytes.Equal(infoHash, c.infoHash), nil
 }
 

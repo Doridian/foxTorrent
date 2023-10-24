@@ -49,7 +49,7 @@ func (c *Connection) ReceiveHandshake(respondAfterInfoHash bool) error {
 
 	readInfoHash := buf[HandshakeLenBeforeInfoHash:HandshakeLenMin]
 
-	infoHashValid, err := c.InfoHashValidator(readInfoHash)
+	infoHashValid, err := c.InfoHashValidator(c, readInfoHash)
 	if err != nil {
 		return err
 	}

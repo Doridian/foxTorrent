@@ -2,6 +2,7 @@ package torrent
 
 import (
 	"encoding/binary"
+	"log"
 )
 
 type PieceRequest struct {
@@ -66,6 +67,15 @@ func (c *Connection) onPieceData(index uint32, begin uint32, data []byte) error 
 	go pieceRequest.Callback(data)
 
 	delete(c.pieceRequests, pieceMapIndex)
+
+	if c.GetPieceQueueLength() == 0 {
+		go func() {
+			err := c.setInterested(false)
+			if err != nil {
+				log.Printf("error setting interested to false: %v", err)
+			}
+		}()
+	}
 
 	return nil
 }
