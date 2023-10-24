@@ -95,7 +95,13 @@ func main() {
 	}
 	log.Printf("%+v", res)
 
-	randomPeer := res.Peers[0]
+	var randomPeer *announce.Peer
+	for _, peer := range res.Peers {
+		if peer.Port == 9900 {
+			randomPeer = &peer
+			break
+		}
+	}
 
 	log.Printf("Connecting to peer at %v", randomPeer)
 	nc, err := net.Dial("tcp", fmt.Sprintf("[%s]:%d", randomPeer.IP, randomPeer.Port))
@@ -109,12 +115,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	log.Printf("Sent handshake. Requesting piece")
+
 	dummyRequest := torrent.PieceRequest{
 		Index:  0,
 		Begin:  0,
-		Length: 1024,
-		Callback: func(index uint32, block []byte) {
-			log.Printf("Received block for index %d, begin %d, length %d", index, 0, len(block))
+		Length: 16 * 1024,
+		Callback: func(block []byte) {
+			log.Printf("Received block length %d", len(block))
 		},
 	}
 	client.RequestPiece(&dummyRequest)

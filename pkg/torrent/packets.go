@@ -39,6 +39,8 @@ func (c *Connection) ReadPacket() (*Packet, error) {
 		return nil, nil
 	}
 
+	log.Printf("Reading packet of length %d", packetLenInt)
+
 	packet := make([]byte, packetLenInt)
 	_, err = io.ReadFull(c.conn, packet)
 	if err != nil {
@@ -76,8 +78,10 @@ func (c *Connection) Serve() error {
 		switch packet.ID {
 		case PacketChoke:
 			c.remoteChoking = true
+			log.Printf("Got choked!")
 		case PacketUnchoke:
 			c.remoteChoking = false
+			log.Printf("Got unchoked!")
 			go c.requestNextPiece()
 		case PacketInterested:
 			c.remoteInterested = true

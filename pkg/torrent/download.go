@@ -1,19 +1,24 @@
 package torrent
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"log"
+)
 
 type PieceRequest struct {
 	Index  uint32
 	Begin  uint32
 	Length uint32
 
-	Callback func(uint32, []byte)
+	Callback func([]byte)
 }
 
 func (c *Connection) RequestPiece(request *PieceRequest) error {
 	c.pieceQueueLock.Lock()
 	c.pieceRequestQueue = append(c.pieceRequestQueue, request)
+	c.setInterested(true)
 	c.pieceQueueLock.Unlock()
+
 	return c.requestNextPiece()
 }
 
@@ -39,9 +44,14 @@ func (c *Connection) CancelPiece(request *PieceRequest) error {
 }
 
 func (c *Connection) requestNextPiece() error {
+	c.pieceQueueLock.Lock()
+	defer c.pieceQueueLock.Unlock()
+
 	if len(c.pieceRequestQueue) == 0 {
+		c.setInterested(false)
 		return nil
 	}
+
 	if c.currentPieceRequest != nil {
 		return nil
 	}
@@ -49,22 +59,11 @@ func (c *Connection) requestNextPiece() error {
 		return nil
 	}
 
-	if !c.localInterested {
-		err := c.WritePacket(&Packet{
-			ID: PacketInterested,
-		})
-		if err != nil {
-			return err
-		}
-		c.localInterested = true
-	}
-
-	c.pieceQueueLock.Lock()
-	defer c.pieceQueueLock.Unlock()
-
 	request := c.pieceRequestQueue[0]
 	c.pieceRequestQueue = c.pieceRequestQueue[1:]
 	c.currentPieceRequest = request
+
+	log.Printf("Requesting piece %d, begin %d, length %d", request.Index, request.Begin, request.Length)
 
 	payload := make([]byte, 0, 12)
 	payload = binary.BigEndian.AppendUint32(payload, request.Index)
@@ -81,13 +80,16 @@ func (c *Connection) onPieceData(index uint32, begin uint32, data []byte) error 
 	defer c.pieceQueueLock.Unlock()
 
 	handledPieceRequest := c.currentPieceRequest
-	if begin < handledPieceRequest.Begin {
+	if begin != handledPieceRequest.Begin {
 		return nil
 	}
 	if index != handledPieceRequest.Index {
 		return nil
 	}
+	if len(data) != int(handledPieceRequest.Length) {
+		return nil
+	}
 	c.currentPieceRequest = nil
-	handledPieceRequest.Callback(begin, data)
+	handledPieceRequest.Callback(data)
 	return nil
 }
