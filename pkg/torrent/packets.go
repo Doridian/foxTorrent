@@ -78,6 +78,7 @@ func (c *Connection) Serve() error {
 			c.remoteChoking = true
 		case PacketUnchoke:
 			c.remoteChoking = false
+			go c.requestNextPiece()
 		case PacketInterested:
 			c.remoteInterested = true
 		case PacketNotInterested:

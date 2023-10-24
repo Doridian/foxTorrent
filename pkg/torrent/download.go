@@ -45,6 +45,19 @@ func (c *Connection) requestNextPiece() error {
 	if c.currentPieceRequest != nil {
 		return nil
 	}
+	if c.remoteChoking {
+		return nil
+	}
+
+	if !c.localInterested {
+		err := c.WritePacket(&Packet{
+			ID: PacketInterested,
+		})
+		if err != nil {
+			return err
+		}
+		c.localInterested = true
+	}
 
 	c.pieceQueueLock.Lock()
 	defer c.pieceQueueLock.Unlock()
