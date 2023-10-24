@@ -101,6 +101,6 @@ func (c *Connection) onPieceData(index uint32, begin uint32, data []byte) error 
 		return nil
 	}
 	c.currentPieceRequest = nil
-	handledPieceRequest.Callback(data)
+	go handledPieceRequest.Callback(data)
 	return nil
 }
