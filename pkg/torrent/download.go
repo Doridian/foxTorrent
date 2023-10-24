@@ -2,7 +2,6 @@ package torrent
 
 import (
 	"encoding/binary"
-	"log"
 )
 
 type PieceRequest struct {
@@ -12,6 +11,8 @@ type PieceRequest struct {
 
 	Callback func([]byte)
 }
+
+// TODO: Important! We need multiple concurrent requests in-flight at once.
 
 func (c *Connection) RequestPiece(request *PieceRequest) error {
 	c.pieceQueueLock.Lock()
@@ -73,8 +74,6 @@ func (c *Connection) requestNextPiece() error {
 	request := c.pieceRequestQueue[0]
 	c.pieceRequestQueue = c.pieceRequestQueue[1:]
 	c.currentPieceRequest = request
-
-	log.Printf("Requesting piece %d, begin %d, length %d", request.Index, request.Begin, request.Length)
 
 	payload := make([]byte, 0, 12)
 	payload = binary.BigEndian.AppendUint32(payload, request.Index)

@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
-	"log"
 
 	"github.com/Workiva/go-datastructures/bitarray"
 )
@@ -38,8 +37,6 @@ func (c *Connection) ReadPacket() (*Packet, error) {
 	if packetLenInt == 0 { // keep-alive packet
 		return nil, nil
 	}
-
-	log.Printf("Reading packet of length %d", packetLenInt)
 
 	packet := make([]byte, packetLenInt)
 	_, err = io.ReadFull(c.conn, packet)
@@ -78,16 +75,21 @@ func (c *Connection) Serve() error {
 		switch packet.ID {
 		case PacketChoke:
 			c.remoteChoking = true
+
 		case PacketUnchoke:
 			c.remoteChoking = false
 			go c.requestNextPiece()
+
 		case PacketInterested:
 			c.remoteInterested = true
+
 		case PacketNotInterested:
 			c.remoteInterested = false
+
 		case PacketHave:
 			piece := binary.BigEndian.Uint32(packet.Payload)
 			c.remoteHave.SetBit(uint64(piece))
+
 		case PacketBitfield:
 			if !c.remoteHave.IsEmpty() {
 				return errors.New("unexpected bitfield packet")
@@ -104,6 +106,7 @@ func (c *Connection) Serve() error {
 			}
 
 			c.remoteHave = newRemoteHave
+
 		case PacketRequest:
 			index := binary.BigEndian.Uint32(packet.Payload[:4])
 			begin := binary.BigEndian.Uint32(packet.Payload[4:8])
@@ -113,20 +116,18 @@ func (c *Connection) Serve() error {
 				return errors.New("got request while choked")
 			}
 
-			piece, err := c.OnPieceRequest(index, begin, length)
-			if err != nil {
-				return err
-			}
-
-			if piece != nil {
-				payload := make([]byte, 0, 8+len(piece))
+			err := c.OnPieceRequest(index, begin, length, func(data []byte) error {
+				payload := make([]byte, 0, 8+len(data))
 				payload = binary.BigEndian.AppendUint32(payload, index)
 				payload = binary.BigEndian.AppendUint32(payload, begin)
-				payload = append(payload, piece...)
-				c.WritePacket(&Packet{
+				payload = append(payload, data...)
+				return c.WritePacket(&Packet{
 					ID:      PacketPiece,
 					Payload: payload,
 				})
+			})
+			if err != nil {
+				return err
 			}
 
 		case PacketPiece:
@@ -144,7 +145,10 @@ func (c *Connection) Serve() error {
 			begin := binary.BigEndian.Uint32(packet.Payload[4:8])
 			length := binary.BigEndian.Uint32(packet.Payload[8:12])
 
-			log.Printf("Received cancel for index %d, begin %d, length %d", index, begin, length)
+			err := c.OnPieceCancel(index, begin, length)
+			if err != nil {
+				return err
+			}
 		}
 	}
 }

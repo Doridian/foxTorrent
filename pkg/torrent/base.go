@@ -8,6 +8,10 @@ import (
 	"github.com/Workiva/go-datastructures/bitarray"
 )
 
+type SendPieceReply = func([]byte) error
+type OnPieceRequestHandler = func(index uint32, begin uint32, length uint32, reply SendPieceReply) error
+type OnPieceCancelHandler = func(index uint32, begin uint32, length uint32) error
+
 type Connection struct {
 	conn net.Conn
 
@@ -30,7 +34,8 @@ type Connection struct {
 	pieceQueueLock      sync.Mutex
 	currentPieceRequest *PieceRequest
 
-	OnPieceRequest func(uint32, uint32, uint32) ([]byte, error)
+	OnPieceRequest OnPieceRequestHandler
+	OnPieceCancel  OnPieceCancelHandler
 }
 
 type InfoHashValidator func(infoHash []byte) (bool, error)
