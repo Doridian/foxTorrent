@@ -41,7 +41,7 @@ func (c *Connection) SendHaveState(curState *state.State) error {
 		pieceDelta.GetSetBits(pos, setBitBuffer)
 
 		for _, piece := range setBitBuffer {
-			err := c.transmitHave(uint32(piece))
+			err := c.SendHavePiece(uint32(piece))
 			if err != nil {
 				return err
 			}
@@ -57,7 +57,7 @@ func (c *Connection) SendHaveState(curState *state.State) error {
 	return nil
 }
 
-func (c *Connection) transmitHave(piece uint32) error {
+func (c *Connection) SendHavePiece(piece uint32) error {
 	payload := make([]byte, 4)
 	binary.BigEndian.PutUint32(payload, piece)
 
