@@ -40,6 +40,13 @@ func (c *Connection) CancelPiece(request *PieceRequest) error {
 		})
 	}
 
+	for i, queuedRequest := range c.pieceRequestQueue {
+		if queuedRequest == request {
+			c.pieceRequestQueue = append(c.pieceRequestQueue[:i], c.pieceRequestQueue[i+1:]...)
+			break
+		}
+	}
+
 	return nil
 }
 
