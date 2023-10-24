@@ -117,7 +117,7 @@ func (c *Connection) Serve() error {
 				return errors.New("got request while choked")
 			}
 
-			go func() {
+			go func(index uint32, begin uint32, length uint32) {
 				err := c.OnPieceRequest(index, begin, length, func(data []byte) error {
 					payload := make([]byte, 0, 8+len(data))
 					payload = binary.BigEndian.AppendUint32(payload, index)
@@ -131,7 +131,7 @@ func (c *Connection) Serve() error {
 				if err != nil {
 					log.Printf("error handling piece request: %v", err)
 				}
-			}()
+			}(index, begin, length)
 
 		case PacketPiece:
 			index := binary.BigEndian.Uint32(packet.Payload[:4])
