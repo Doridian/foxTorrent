@@ -78,10 +78,8 @@ func (c *Connection) Serve() error {
 		switch packet.ID {
 		case PacketChoke:
 			c.remoteChoking = true
-			log.Printf("Got choked!")
 		case PacketUnchoke:
 			c.remoteChoking = false
-			log.Printf("Got unchoked!")
 			go c.requestNextPiece()
 		case PacketInterested:
 			c.remoteInterested = true
@@ -111,13 +109,31 @@ func (c *Connection) Serve() error {
 			begin := binary.BigEndian.Uint32(packet.Payload[4:8])
 			length := binary.BigEndian.Uint32(packet.Payload[8:12])
 
-			log.Printf("Received request for index %d, begin %d, length %d", index, begin, length)
+			if c.localChoking {
+				return errors.New("got request while choked")
+			}
+
+			piece, err := c.OnPieceRequest(index, begin, length)
+			if err != nil {
+				return err
+			}
+
+			if piece != nil {
+				payload := make([]byte, 0, 8+len(piece))
+				payload = binary.BigEndian.AppendUint32(payload, index)
+				payload = binary.BigEndian.AppendUint32(payload, begin)
+				payload = append(payload, piece...)
+				c.WritePacket(&Packet{
+					ID:      PacketPiece,
+					Payload: payload,
+				})
+			}
+
 		case PacketPiece:
 			index := binary.BigEndian.Uint32(packet.Payload[:4])
 			begin := binary.BigEndian.Uint32(packet.Payload[4:8])
 			block := packet.Payload[8:]
 
-			log.Printf("Received piece for index %d, begin %d, block length %d", index, begin, len(block))
 			err := c.onPieceData(index, begin, block)
 			if err != nil {
 				return err

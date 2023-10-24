@@ -29,6 +29,8 @@ type Connection struct {
 	pieceRequestQueue   []*PieceRequest
 	pieceQueueLock      sync.Mutex
 	currentPieceRequest *PieceRequest
+
+	OnPieceRequest func(uint32, uint32, uint32) ([]byte, error)
 }
 
 type InfoHashValidator func(infoHash []byte) (bool, error)

@@ -43,6 +43,10 @@ func (c *Connection) CancelPiece(request *PieceRequest) error {
 	return nil
 }
 
+func (c *Connection) GetPieceQueueLength() int {
+	return len(c.pieceRequestQueue)
+}
+
 func (c *Connection) requestNextPiece() error {
 	c.pieceQueueLock.Lock()
 	defer c.pieceQueueLock.Unlock()
