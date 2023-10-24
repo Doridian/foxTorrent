@@ -63,6 +63,11 @@ func (c *Connection) WritePacket(packet *Packet) error {
 }
 
 func (c *Connection) Serve() error {
+	defer c.Close()
+	return c.serve()
+}
+
+func (c *Connection) serve() error {
 	for {
 		packet, err := c.ReadPacket()
 		if err != nil {
@@ -79,7 +84,6 @@ func (c *Connection) Serve() error {
 
 		case PacketUnchoke:
 			c.remoteChoking = false
-			go c.requestNextPiece()
 
 		case PacketInterested:
 			c.remoteInterested = true
@@ -115,6 +119,10 @@ func (c *Connection) Serve() error {
 
 			if c.localChoking {
 				return errors.New("got request while choked")
+			}
+
+			if !c.remoteInterested {
+				return errors.New("got request while not interested")
 			}
 
 			go func(index uint32, begin uint32, length uint32) {
