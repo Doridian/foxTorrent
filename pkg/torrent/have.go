@@ -55,6 +55,8 @@ func (c *Connection) SendHavePiece(piece uint32) error {
 	payload := make([]byte, 4)
 	binary.BigEndian.PutUint32(payload, piece)
 
+	c.localHave.SetBit(uint64(piece))
+
 	return c.WritePacket(&Packet{
 		ID:      PacketHave,
 		Payload: payload,
