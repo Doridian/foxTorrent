@@ -191,6 +191,10 @@ func (c *Connection) serve() error {
 			} else {
 				go c.OnPieceCancel(c, index, begin, length)
 			}
+
+		case PacketPort:
+			port := binary.BigEndian.Uint16(packet.Payload[:2])
+			log.Printf("got port %d", port)
 		}
 	}
 }
