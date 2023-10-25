@@ -113,6 +113,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	client.SetPieceCount(uint64(len(meta.Info.Pieces)))
+
 	log.Printf("Sent handshake. Waiting for unchoke")
 
 	client.OnRemoteChoke = func(_ *torrent.Connection, choking bool) {
