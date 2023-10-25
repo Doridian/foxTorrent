@@ -9,7 +9,7 @@ import (
 )
 
 type OnPieceRequestHandler func(conn *Connection, index uint32, begin uint32, length uint32, reply SendPieceReply) error
-type OnPieceCancelHandler func(conn *Connection, index uint32, begin uint32, length uint32) error
+type OnPieceCancelHandler func(conn *Connection, index uint32, begin uint32, length uint32)
 type InfoHashValidatorHandler func(conn *Connection, infoHash []byte) (bool, error)
 
 type Connection struct {

@@ -189,10 +189,7 @@ func (c *Connection) serve() error {
 			if c.OnPieceCancel == nil {
 				log.Printf("got cancel for piece %d, but no handler is registered", index)
 			} else {
-				err := c.OnPieceCancel(c, index, begin, length)
-				if err != nil {
-					return err
-				}
+				go c.OnPieceCancel(c, index, begin, length)
 			}
 		}
 	}
