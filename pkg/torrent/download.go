@@ -64,6 +64,10 @@ func (c *Connection) onPieceData(index uint32, begin uint32, data []byte) error 
 		return nil
 	}
 
+	if len(data) != int(pieceRequest.Length) {
+		return nil
+	}
+
 	delete(c.pieceRequests, pieceMapIndex)
 
 	if c.GetPieceQueueLength() == 0 {
