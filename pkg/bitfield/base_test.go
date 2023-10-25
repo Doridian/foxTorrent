@@ -31,3 +31,48 @@ func TestGetSetBits(t *testing.T) {
 	setBits = bf.GetSetBits(1, setBits)
 	assert.Equal(t, []uint64{10}, setBits)
 }
+
+func TestGetBit(t *testing.T) {
+	bf := bitfield.NewBitfieldFromBytes([]byte{0b10000000, 0b00100000})
+	assert.True(t, bf.GetBit(0))
+	assert.False(t, bf.GetBit(1))
+	assert.False(t, bf.GetBit(2))
+	assert.False(t, bf.GetBit(3))
+	assert.False(t, bf.GetBit(4))
+	assert.False(t, bf.GetBit(5))
+	assert.False(t, bf.GetBit(6))
+	assert.False(t, bf.GetBit(7))
+	assert.False(t, bf.GetBit(8))
+	assert.False(t, bf.GetBit(9))
+	assert.True(t, bf.GetBit(10))
+	assert.False(t, bf.GetBit(11))
+	assert.False(t, bf.GetBit(12))
+	assert.False(t, bf.GetBit(13))
+	assert.False(t, bf.GetBit(14))
+	assert.False(t, bf.GetBit(15))
+}
+
+func TestSetBit(t *testing.T) {
+	bf := bitfield.NewBitfield(16)
+	bf.SetBit(0)
+	bf.SetBit(10)
+	bf.SetBit(10)
+	assert.Equal(t, []byte{0b10000000, 0b00100000}, bf.GetData())
+}
+
+func TestClearBit(t *testing.T) {
+	bf := bitfield.NewBitfieldFromBytes([]byte{0b10000000, 0b00100000})
+	bf.ClearBit(0)
+	bf.ClearBit(1)
+	bf.ClearBit(2)
+	assert.Equal(t, []byte{0b00000000, 0b00100000}, bf.GetData())
+	bf.ClearBit(10)
+	assert.Equal(t, []byte{0b00000000, 0b00000000}, bf.GetData())
+}
+
+func TestDelta(t *testing.T) {
+	bf1 := bitfield.NewBitfieldFromBytes([]byte{0b10000000, 0b00100000})
+	bf2 := bitfield.NewBitfieldFromBytes([]byte{0b00000100, 0b00100000})
+	bf3 := bf1.Delta(bf2)
+	assert.Equal(t, []byte{0b10000000, 0b00000000}, bf3.GetData())
+}

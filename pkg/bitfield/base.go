@@ -28,29 +28,12 @@ func (b *Bitfield) GetBit(index uint64) bool {
 	return b.data[index/8]&(1<<(7-index%8)) != 0
 }
 
-func (b *Bitfield) IsEmpty() bool {
-	for _, v := range b.data {
-		if v != 0 {
-			return false
-		}
-	}
-	return true
-}
-
 func (b *Bitfield) Delta(other *Bitfield) *Bitfield {
 	newBitfield := &Bitfield{
 		data: make([]byte, len(b.data)),
 	}
 	for i := range b.data {
 		newBitfield.data[i] = b.data[i] & (^other.data[i])
-	}
-	return newBitfield
-}
-
-func (b *Bitfield) Nand(other *Bitfield) *Bitfield {
-	newBitfield := NewBitfield(uint64(len(b.data)) * 8)
-	for i := range b.data {
-		newBitfield.data[i] = b.data[i] &^ other.data[i]
 	}
 	return newBitfield
 }

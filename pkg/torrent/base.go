@@ -24,9 +24,10 @@ type Connection struct {
 	localInterested  bool
 	remoteInterested bool
 
-	localHave       *bitfield.Bitfield
-	remoteHave      *bitfield.Bitfield
-	canSendBitfield bool
+	localHave          *bitfield.Bitfield
+	remoteHave         *bitfield.Bitfield
+	canSendBitfield    bool
+	canReceiveBitfield bool
 
 	pieceRequests    map[uint64]*PieceRequest
 	pieceRequestLock sync.Mutex
@@ -52,9 +53,10 @@ func ServeAsInitiator(conn net.Conn, infoHash []byte, localPeerID string, remote
 		localInterested:  false,
 		remoteInterested: false,
 
-		localHave:       bitfield.NewBitfield(0),
-		remoteHave:      bitfield.NewBitfield(0),
-		canSendBitfield: true,
+		localHave:          bitfield.NewBitfield(0),
+		remoteHave:         bitfield.NewBitfield(0),
+		canSendBitfield:    true,
+		canReceiveBitfield: true,
 
 		pieceRequests: make(map[uint64]*PieceRequest),
 	}
@@ -87,9 +89,10 @@ func ServeAsRecipient(conn net.Conn, infoHashValidator InfoHashValidatorHandler,
 		localInterested:  false,
 		remoteInterested: false,
 
-		localHave:       bitfield.NewBitfield(0),
-		remoteHave:      bitfield.NewBitfield(0),
-		canSendBitfield: true,
+		localHave:          bitfield.NewBitfield(0),
+		remoteHave:         bitfield.NewBitfield(0),
+		canSendBitfield:    true,
+		canReceiveBitfield: true,
 
 		pieceRequests: make(map[uint64]*PieceRequest),
 	}

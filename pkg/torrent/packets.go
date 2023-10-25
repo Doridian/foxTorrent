@@ -47,6 +47,8 @@ func (c *Connection) ReadPacket() (*Packet, error) {
 		return nil, err
 	}
 
+	c.canReceiveBitfield = false
+
 	return &Packet{
 		ID:      packet[0],
 		Payload: packet[1:],
@@ -71,6 +73,7 @@ func (c *Connection) Serve() error {
 
 func (c *Connection) serve() error {
 	for {
+		canReceiveBitfield := c.canReceiveBitfield
 		packet, err := c.ReadPacket()
 		if err != nil {
 			return err
@@ -114,7 +117,7 @@ func (c *Connection) serve() error {
 			}
 
 		case PacketBitfield:
-			if !c.remoteHave.IsEmpty() {
+			if !canReceiveBitfield {
 				return errors.New("unexpected bitfield packet")
 			}
 
