@@ -64,8 +64,6 @@ func (c *Connection) onPieceData(index uint32, begin uint32, data []byte) error 
 		return nil
 	}
 
-	go pieceRequest.Callback(data)
-
 	delete(c.pieceRequests, pieceMapIndex)
 
 	if c.GetPieceQueueLength() == 0 {
@@ -76,6 +74,8 @@ func (c *Connection) onPieceData(index uint32, begin uint32, data []byte) error 
 			}
 		}()
 	}
+
+	go pieceRequest.Callback(data)
 
 	return nil
 }
