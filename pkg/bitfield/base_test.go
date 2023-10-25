@@ -17,11 +17,19 @@ func TestCreateFromBytes(t *testing.T) {
 }
 
 func TestGetSetBits(t *testing.T) {
-	bf := bitfield.NewBitfieldFromBytes([]byte{0b10000000, 0b00100000})
+	bf := bitfield.NewBitfieldFromBytes([]byte{0b10000011, 0b10100000})
 
-	setBits := make([]uint64, 0, 2)
+	setBits := make([]uint64, 0, 16)
 	setBits = bf.GetSetBits(0, setBits)
-	assert.Equal(t, []uint64{0, 10}, setBits)
+	assert.Equal(t, []uint64{0, 6, 7, 8, 10}, setBits)
+
+	setBits = make([]uint64, 0, 16)
+	setBits = bf.GetSetBits(7, setBits)
+	assert.Equal(t, []uint64{7, 8, 10}, setBits)
+
+	setBits = make([]uint64, 0, 2)
+	setBits = bf.GetSetBits(0, setBits)
+	assert.Equal(t, []uint64{0, 6}, setBits)
 
 	setBits = make([]uint64, 0, 1)
 	setBits = bf.GetSetBits(0, setBits)
@@ -29,6 +37,18 @@ func TestGetSetBits(t *testing.T) {
 
 	setBits = make([]uint64, 0, 1)
 	setBits = bf.GetSetBits(1, setBits)
+	assert.Equal(t, []uint64{6}, setBits)
+
+	setBits = make([]uint64, 0, 1)
+	setBits = bf.GetSetBits(7, setBits)
+	assert.Equal(t, []uint64{7}, setBits)
+
+	setBits = make([]uint64, 0, 1)
+	setBits = bf.GetSetBits(8, setBits)
+	assert.Equal(t, []uint64{8}, setBits)
+
+	setBits = make([]uint64, 0, 1)
+	setBits = bf.GetSetBits(9, setBits)
 	assert.Equal(t, []uint64{10}, setBits)
 }
 

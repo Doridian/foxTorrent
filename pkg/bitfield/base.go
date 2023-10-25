@@ -38,23 +38,32 @@ func (b *Bitfield) Delta(other *Bitfield) *Bitfield {
 	return newBitfield
 }
 
-func (b *Bitfield) GetSetBits(start uint64, setBits []uint64) []uint64 {
+func (b *Bitfield) GetSetBits(index uint64, setBits []uint64) []uint64 {
 	setBitsEnd := uint64(len(b.data))
 
-	setBitsCap := uint64(cap(setBits))
-	setBitsNeeded := setBitsEnd - start
-	if setBitsCap < setBitsNeeded {
-		setBitsEnd = start + setBitsCap
-	}
-
-	for i := start; i < setBitsEnd; i++ {
-		for j := uint64(0); j < 8; j++ {
-			if b.data[i]&(1<<uint(7-j)) != 0 {
+	jStart := index % 8
+	for i := index / 8; i < setBitsEnd; i++ {
+		for j := jStart; j < 8; j++ {
+			if b.data[i]&(1<<(7-j)) != 0 {
 				setBits = append(setBits, i*8+j)
+				if len(setBits) == cap(setBits) {
+					return setBits
+				}
+			}
+		}
+		jStart = 0
+	}
+	return setBits
+}
+
+func (b *Bitfield) ForEachSetBit(f func(index uint64)) {
+	for i := uint64(0); i < uint64(len(b.data)); i++ {
+		for j := uint64(0); j < 8; j++ {
+			if b.data[i]&(1<<(7-j)) != 0 {
+				f(i*8 + j)
 			}
 		}
 	}
-	return setBits
 }
 
 func (b *Bitfield) GetData() []byte {
