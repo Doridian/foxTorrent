@@ -47,28 +47,16 @@ func (b *Bitfield) Delta(other *Bitfield) *Bitfield {
 	return newBitfield
 }
 
-func (b *Bitfield) GetSetBits(index uint64, setBits []uint64) []uint64 {
-	setBitsEnd := uint64(len(b.data))
-
-	jStart := index % 8
-	for i := index / 8; i < setBitsEnd; i++ {
-		for j := jStart; j < 8; j++ {
-			if b.data[i]&(1<<(7-j)) != 0 {
-				setBits = append(setBits, i*8+j)
-				if len(setBits) == cap(setBits) {
-					return setBits
-				}
-			}
-		}
-		jStart = 0
-	}
-	return setBits
-}
-
-func (b *Bitfield) ForEachSetBit(f func(index uint64) error) error {
+func (b *Bitfield) ForEachMatchingBit(set bool, f func(index uint64) error) error {
+	matches := false
 	for i := uint64(0); i < uint64(len(b.data)); i++ {
 		for j := uint64(0); j < 8; j++ {
-			if b.data[i]&(1<<(7-j)) != 0 {
+			if set {
+				matches = b.data[i]&(1<<(7-j)) != 0
+			} else {
+				matches = b.data[i]&(1<<(7-j)) == 0
+			}
+			if matches {
 				err := f(i*8 + j)
 				if err != nil {
 					return err

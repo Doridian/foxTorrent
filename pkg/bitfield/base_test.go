@@ -17,60 +17,31 @@ func TestCreateFromBytes(t *testing.T) {
 	}
 }
 
-func TestGetSetBits(t *testing.T) {
+func TestForEachMatchingBit(t *testing.T) {
 	bf := bitfield.NewBitfieldFromBytes([]byte{0b10000011, 0b10100000})
 
-	setBits := make([]uint64, 0, 16)
-	setBits = bf.GetSetBits(0, setBits)
-	assert.Equal(t, []uint64{0, 6, 7, 8, 10}, setBits)
-
-	setBits = make([]uint64, 0, 16)
-	setBits = bf.GetSetBits(7, setBits)
-	assert.Equal(t, []uint64{7, 8, 10}, setBits)
-
-	setBits = make([]uint64, 0, 2)
-	setBits = bf.GetSetBits(0, setBits)
-	assert.Equal(t, []uint64{0, 6}, setBits)
-
-	setBits = make([]uint64, 0, 1)
-	setBits = bf.GetSetBits(0, setBits)
-	assert.Equal(t, []uint64{0}, setBits)
-
-	setBits = make([]uint64, 0, 1)
-	setBits = bf.GetSetBits(1, setBits)
-	assert.Equal(t, []uint64{6}, setBits)
-
-	setBits = make([]uint64, 0, 1)
-	setBits = bf.GetSetBits(7, setBits)
-	assert.Equal(t, []uint64{7}, setBits)
-
-	setBits = make([]uint64, 0, 1)
-	setBits = bf.GetSetBits(8, setBits)
-	assert.Equal(t, []uint64{8}, setBits)
-
-	setBits = make([]uint64, 0, 1)
-	setBits = bf.GetSetBits(9, setBits)
-	assert.Equal(t, []uint64{10}, setBits)
-}
-
-func TestForEachSetBit(t *testing.T) {
-	bf := bitfield.NewBitfieldFromBytes([]byte{0b10000011, 0b10100000})
-
-	setBits := make([]uint64, 0, 16)
-	bf.ForEachSetBit(func(index uint64) error {
-		setBits = append(setBits, index)
+	matchingBits := make([]uint64, 0, 16)
+	bf.ForEachMatchingBit(true, func(index uint64) error {
+		matchingBits = append(matchingBits, index)
 		return nil
 	})
-	assert.Equal(t, []uint64{0, 6, 7, 8, 10}, setBits)
+	assert.Equal(t, []uint64{0, 6, 7, 8, 10}, matchingBits)
 
-	setBits = setBits[:0]
+	matchingBits = matchingBits[:0]
 	expectErr := errors.New("test error")
-	err := bf.ForEachSetBit(func(index uint64) error {
-		setBits = append(setBits, index)
+	err := bf.ForEachMatchingBit(true, func(index uint64) error {
+		matchingBits = append(matchingBits, index)
 		return expectErr
 	})
 	assert.ErrorIs(t, err, expectErr)
-	assert.Equal(t, []uint64{0}, setBits)
+	assert.Equal(t, []uint64{0}, matchingBits)
+
+	matchingBits = matchingBits[:0]
+	bf.ForEachMatchingBit(false, func(index uint64) error {
+		matchingBits = append(matchingBits, index)
+		return nil
+	})
+	assert.Equal(t, []uint64{1, 2, 3, 4, 5, 9, 11, 12, 13, 14, 15}, matchingBits)
 }
 
 func TestGetBit(t *testing.T) {
