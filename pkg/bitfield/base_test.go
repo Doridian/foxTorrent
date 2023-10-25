@@ -1,6 +1,7 @@
 package bitfield_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/Doridian/foxTorrent/pkg/bitfield"
@@ -61,6 +62,15 @@ func TestForEachSetBit(t *testing.T) {
 		return nil
 	})
 	assert.Equal(t, []uint64{0, 6, 7, 8, 10}, setBits)
+
+	setBits = setBits[:0]
+	expectErr := errors.New("test error")
+	err := bf.ForEachSetBit(func(index uint64) error {
+		setBits = append(setBits, index)
+		return expectErr
+	})
+	assert.ErrorIs(t, err, expectErr)
+	assert.Equal(t, []uint64{0}, setBits)
 }
 
 func TestGetBit(t *testing.T) {
