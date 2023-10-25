@@ -91,7 +91,9 @@ func TestGetBit(t *testing.T) {
 	assert.False(t, bf.GetBit(13))
 	assert.False(t, bf.GetBit(14))
 	assert.False(t, bf.GetBit(15))
-	assert.False(t, bf.GetBit(666))
+	assert.False(t, bf.GetBit(16))
+	assert.False(t, bf.GetBit(17))
+	assert.False(t, bf.GetBit(18))
 }
 
 func TestSetBit(t *testing.T) {
@@ -99,7 +101,9 @@ func TestSetBit(t *testing.T) {
 	bf.SetBit(0)
 	bf.SetBit(10)
 	bf.SetBit(10)
-	bf.SetBit(666)
+	bf.SetBit(16)
+	bf.SetBit(17)
+	bf.SetBit(18)
 	assert.Equal(t, []byte{0b10000000, 0b00100000}, bf.GetData())
 }
 
@@ -110,7 +114,9 @@ func TestClearBit(t *testing.T) {
 	bf.ClearBit(2)
 	assert.Equal(t, []byte{0b00000000, 0b00100000}, bf.GetData())
 	bf.ClearBit(10)
-	bf.ClearBit(666)
+	bf.ClearBit(16)
+	bf.ClearBit(17)
+	bf.ClearBit(18)
 	assert.Equal(t, []byte{0b00000000, 0b00000000}, bf.GetData())
 }
 
