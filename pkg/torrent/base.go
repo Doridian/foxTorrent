@@ -53,8 +53,8 @@ func ServeAsInitiator(conn net.Conn, infoHash []byte, localPeerID string, remote
 		localInterested:  false,
 		remoteInterested: false,
 
-		localHave:          bitfield.NewBitfield(0),
-		remoteHave:         bitfield.NewBitfield(0),
+		localHave:          nil,
+		remoteHave:         nil,
 		canSendBitfield:    true,
 		canReceiveBitfield: true,
 
@@ -89,8 +89,8 @@ func ServeAsRecipient(conn net.Conn, infoHashValidator InfoHashValidatorHandler,
 		localInterested:  false,
 		remoteInterested: false,
 
-		localHave:          bitfield.NewBitfield(0),
-		remoteHave:         bitfield.NewBitfield(0),
+		localHave:          nil,
+		remoteHave:         nil,
 		canSendBitfield:    true,
 		canReceiveBitfield: true,
 
@@ -123,4 +123,9 @@ func (c *Connection) LocalPeerID() string {
 
 func (c *Connection) InfoHash() []byte {
 	return c.infoHash
+}
+
+func (c *Connection) SetPieceCount(pieces uint64) {
+	c.remoteHave = bitfield.NewBitfield(pieces)
+	c.localHave = bitfield.NewBitfield(pieces)
 }

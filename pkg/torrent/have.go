@@ -28,23 +28,11 @@ func (c *Connection) SendHaveState(curState *state.State) error {
 		pieceDelta = piecesSent.Delta(c.localHave)
 	}
 
-	setBitBuffer := make([]uint64, 0, BitBufferLen)
-	var pos uint64 = 0
-	for {
-		setBitBuffer = setBitBuffer[:0]
-		pieceDelta.GetSetBits(pos, setBitBuffer)
-
-		for _, piece := range setBitBuffer {
-			err := c.SendHavePiece(uint32(piece))
-			if err != nil {
-				return err
-			}
-		}
-
-		if len(setBitBuffer) < BitBufferLen {
-			break
-		}
-		pos += BitBufferLen
+	err := pieceDelta.ForEachSetBit(func(index uint64) error {
+		return c.SendHavePiece(uint32(index))
+	})
+	if err != nil {
+		return err
 	}
 
 	c.localHave = piecesSent

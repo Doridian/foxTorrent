@@ -52,6 +52,17 @@ func TestGetSetBits(t *testing.T) {
 	assert.Equal(t, []uint64{10}, setBits)
 }
 
+func TestForEachSetBit(t *testing.T) {
+	bf := bitfield.NewBitfieldFromBytes([]byte{0b10000011, 0b10100000})
+
+	setBits := make([]uint64, 0, 16)
+	bf.ForEachSetBit(func(index uint64) error {
+		setBits = append(setBits, index)
+		return nil
+	})
+	assert.Equal(t, []uint64{0, 6, 7, 8, 10}, setBits)
+}
+
 func TestGetBit(t *testing.T) {
 	bf := bitfield.NewBitfieldFromBytes([]byte{0b10000000, 0b00100000})
 	assert.True(t, bf.GetBit(0))
@@ -70,6 +81,7 @@ func TestGetBit(t *testing.T) {
 	assert.False(t, bf.GetBit(13))
 	assert.False(t, bf.GetBit(14))
 	assert.False(t, bf.GetBit(15))
+	assert.False(t, bf.GetBit(666))
 }
 
 func TestSetBit(t *testing.T) {
@@ -77,6 +89,7 @@ func TestSetBit(t *testing.T) {
 	bf.SetBit(0)
 	bf.SetBit(10)
 	bf.SetBit(10)
+	bf.SetBit(666)
 	assert.Equal(t, []byte{0b10000000, 0b00100000}, bf.GetData())
 }
 
@@ -87,6 +100,7 @@ func TestClearBit(t *testing.T) {
 	bf.ClearBit(2)
 	assert.Equal(t, []byte{0b00000000, 0b00100000}, bf.GetData())
 	bf.ClearBit(10)
+	bf.ClearBit(666)
 	assert.Equal(t, []byte{0b00000000, 0b00000000}, bf.GetData())
 }
 

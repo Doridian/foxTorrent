@@ -110,15 +110,22 @@ func (c *Connection) serve() error {
 
 		case PacketHave:
 			piece := binary.BigEndian.Uint32(packet.Payload)
-			c.remoteHave.SetBit(uint64(piece))
 
-			if c.OnHaveUpdated != nil {
-				go c.OnHaveUpdated(c, int64(piece))
+			if c.remoteHave != nil {
+				c.remoteHave.SetBit(uint64(piece))
+
+				if c.OnHaveUpdated != nil {
+					go c.OnHaveUpdated(c, int64(piece))
+				}
 			}
 
 		case PacketBitfield:
 			if !canReceiveBitfield {
 				return errors.New("unexpected bitfield packet")
+			}
+
+			if len(packet.Payload) != len(c.remoteHave.GetData()) {
+				return errors.New("invalid bitfield length")
 			}
 
 			c.remoteHave = bitfield.NewBitfieldFromBytes(packet.Payload)
