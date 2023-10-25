@@ -124,14 +124,16 @@ func (c *Connection) serve() error {
 				return errors.New("unexpected bitfield packet")
 			}
 
-			if len(packet.Payload) != len(c.remoteHave.GetData()) {
-				return errors.New("invalid bitfield length")
-			}
+			if c.remoteHave != nil {
+				if len(packet.Payload) != len(c.remoteHave.GetData()) {
+					return errors.New("invalid bitfield length")
+				}
 
-			c.remoteHave = bitfield.NewBitfieldFromBytes(packet.Payload)
+				c.remoteHave = bitfield.NewBitfieldFromBytes(packet.Payload)
 
-			if c.OnHaveUpdated != nil {
-				go c.OnHaveUpdated(c, -1)
+				if c.OnHaveUpdated != nil {
+					go c.OnHaveUpdated(c, -1)
+				}
 			}
 
 		case PacketRequest:
