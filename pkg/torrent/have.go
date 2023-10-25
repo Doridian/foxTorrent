@@ -28,7 +28,7 @@ func (c *Connection) SendHaveState(curState *state.State) error {
 		pieceDelta = piecesSent.Delta(c.localHave)
 	}
 
-	err := pieceDelta.ForEachMatchingBit(true, func(index uint64) error {
+	err := pieceDelta.ForEachMatchingBit(0, true, func(index uint64) error {
 		return c.SendHavePiece(uint32(index))
 	})
 	if err != nil {

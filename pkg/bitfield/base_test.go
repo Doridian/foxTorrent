@@ -21,7 +21,7 @@ func TestForEachMatchingBit(t *testing.T) {
 	bf := bitfield.NewBitfieldFromBytes([]byte{0b10000011, 0b10100000})
 
 	matchingBits := make([]uint64, 0, 16)
-	bf.ForEachMatchingBit(true, func(index uint64) error {
+	bf.ForEachMatchingBit(0, true, func(index uint64) error {
 		matchingBits = append(matchingBits, index)
 		return nil
 	})
@@ -29,19 +29,29 @@ func TestForEachMatchingBit(t *testing.T) {
 
 	matchingBits = matchingBits[:0]
 	expectErr := errors.New("test error")
-	err := bf.ForEachMatchingBit(true, func(index uint64) error {
+	err := bf.ForEachMatchingBit(0, true, func(index uint64) error {
 		matchingBits = append(matchingBits, index)
-		return expectErr
+		if index == 7 {
+			return expectErr
+		}
+		return nil
 	})
 	assert.ErrorIs(t, err, expectErr)
-	assert.Equal(t, []uint64{0}, matchingBits)
+	assert.Equal(t, []uint64{0, 6, 7}, matchingBits)
 
 	matchingBits = matchingBits[:0]
-	bf.ForEachMatchingBit(false, func(index uint64) error {
+	bf.ForEachMatchingBit(0, false, func(index uint64) error {
 		matchingBits = append(matchingBits, index)
 		return nil
 	})
 	assert.Equal(t, []uint64{1, 2, 3, 4, 5, 9, 11, 12, 13, 14, 15}, matchingBits)
+
+	matchingBits = matchingBits[:0]
+	bf.ForEachMatchingBit(6, true, func(index uint64) error {
+		matchingBits = append(matchingBits, index)
+		return nil
+	})
+	assert.Equal(t, []uint64{6, 7, 8, 10}, matchingBits)
 }
 
 func TestGetBit(t *testing.T) {

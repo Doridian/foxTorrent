@@ -47,10 +47,11 @@ func (b *Bitfield) Delta(other *Bitfield) *Bitfield {
 	return newBitfield
 }
 
-func (b *Bitfield) ForEachMatchingBit(set bool, f func(index uint64) error) error {
+func (b *Bitfield) ForEachMatchingBit(index uint64, set bool, f func(index uint64) error) error {
 	matches := false
-	for i := uint64(0); i < uint64(len(b.data)); i++ {
-		for j := uint64(0); j < 8; j++ {
+	jStart := index % 8
+	for i := index / 8; i < uint64(len(b.data)); i++ {
+		for j := jStart; j < 8; j++ {
 			if set {
 				matches = b.data[i]&(1<<(7-j)) != 0
 			} else {
@@ -63,6 +64,7 @@ func (b *Bitfield) ForEachMatchingBit(set bool, f func(index uint64) error) erro
 				}
 			}
 		}
+		jStart = 0
 	}
 	return nil
 }
