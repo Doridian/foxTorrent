@@ -174,10 +174,12 @@ func (c *Connection) serve() error {
 			begin := binary.BigEndian.Uint32(packet.Payload[4:8])
 			block := packet.Payload[8:]
 
-			err := c.onPieceData(index, begin, block)
-			if err != nil {
-				return err
-			}
+			go func(index uint32, begin uint32, block []byte) {
+				err := c.onPieceData(index, begin, block)
+				if err != nil {
+					log.Printf("error handling piece data: %v", err)
+				}
+			}(index, begin, block)
 
 		case PacketCancel:
 			index := binary.BigEndian.Uint32(packet.Payload[:4])
