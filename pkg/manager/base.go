@@ -28,7 +28,7 @@ type TorrentManager struct {
 	announceGatherLock sync.Mutex
 }
 
-func New(infoHash []byte, port uint16) *TorrentManager {
+func New(infoHash []byte, port uint16, peerID string) *TorrentManager {
 	return &TorrentManager{
 		state: &state.State{
 			InfoHash:   infoHash,
@@ -37,6 +37,7 @@ func New(infoHash []byte, port uint16) *TorrentManager {
 			Downloaded: 0,
 			Port:       port,
 			Pieces:     bitfield.NewBitfield(0),
+			PeerID:     peerID,
 		},
 	}
 }
