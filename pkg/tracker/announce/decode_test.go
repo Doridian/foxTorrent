@@ -16,7 +16,7 @@ func TestDecodeUbuntuAnnounce(t *testing.T) {
 	assert.Equal(t, "", decoded.WarningMessage)
 
 	assert.Equal(t, uint32(1800), decoded.Interval)
-	assert.Equal(t, uint32(0), decoded.MinInterval)
+	assert.Equal(t, uint32(1800), decoded.MinInterval)
 
 	assert.Equal(t, "", decoded.TrackerID)
 
@@ -35,7 +35,7 @@ func TestDecodeUbuntuAnnounceIpv4(t *testing.T) {
 	assert.Equal(t, "", decoded.WarningMessage)
 
 	assert.Equal(t, uint32(1800), decoded.Interval)
-	assert.Equal(t, uint32(0), decoded.MinInterval)
+	assert.Equal(t, uint32(1800), decoded.MinInterval)
 
 	assert.Equal(t, "", decoded.TrackerID)
 

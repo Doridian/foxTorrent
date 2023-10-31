@@ -2,6 +2,7 @@ package announce
 
 import (
 	"net"
+	"time"
 
 	"github.com/Doridian/foxTorrent/pkg/torrent/state"
 )
@@ -17,6 +18,9 @@ type Announce struct {
 
 	Interval    uint32
 	MinInterval uint32
+
+	NextAnnounce    time.Time
+	NextMinAnnounce time.Time
 
 	TrackerID string
 

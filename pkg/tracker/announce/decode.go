@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/Doridian/foxTorrent/pkg/bencoding"
 )
@@ -57,6 +58,7 @@ func Decode(data []byte) (*Announce, error) {
 		return nil, bencoding.ErrInvalidType
 	}
 	announce.Interval = uint32(intervalTyped)
+	announce.NextAnnounce = time.Now().Add(time.Duration(announce.Interval) * time.Second)
 
 	minIntervalRaw, ok := decodedDict["min interval"]
 	if ok { // optional
@@ -65,6 +67,10 @@ func Decode(data []byte) (*Announce, error) {
 			return nil, bencoding.ErrInvalidType
 		}
 		announce.MinInterval = uint32(minIntervalTyped)
+		announce.NextMinAnnounce = time.Now().Add(time.Duration(announce.MinInterval) * time.Second)
+	} else {
+		announce.MinInterval = announce.Interval
+		announce.NextMinAnnounce = announce.NextAnnounce
 	}
 
 	completeRaw, ok := decodedDict["complete"]

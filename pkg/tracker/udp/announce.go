@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/Doridian/foxTorrent/pkg/torrent/state"
 	"github.com/Doridian/foxTorrent/pkg/tracker/announce"
@@ -52,6 +53,10 @@ func (c *UDPClient) AnnounceEvent(state *state.State, event uint32) (*announce.A
 		Complete:   binary.BigEndian.Uint32(announceResp[8:12]),
 		Peers:      make([]announce.Peer, 0, peerCount),
 	}
+
+	result.MinInterval = result.Interval
+	result.NextAnnounce = time.Now().Add(time.Duration(result.Interval) * time.Second)
+	result.NextMinAnnounce = result.NextAnnounce
 
 	for i := 0; i < peerLen; i += 6 {
 		result.Peers = append(result.Peers, announce.Peer{
